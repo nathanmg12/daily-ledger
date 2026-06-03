@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Daily Ledger — June 3, 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0d0d0d;
+      --bg-card:      #161616;
+      --border:       #232323;
+      --border-light: #2c2c2c;
+      --gold:         #c8a45a;
+      --gold-light:   #dfc07a;
+      --gold-dim:     #8a7040;
+      --text:         #ede8df;
+      --text-sec:     #9a9080;
+      --text-muted:   #575047;
+      --tag-bg:       #1c1a16;
+      --tag-border:   #38321e;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.72;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 56px 0 48px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      animation: riseIn 0.7s ease both;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(44px, 9vw, 76px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.06;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .dateline {
+      font-size: 13px;
+      color: var(--text-sec);
+      letter-spacing: 0.05em;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      margin: 30px auto 0;
+      max-width: 400px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 13px 14px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+
+    .stat-n {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: var(--gold);
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .stat-l {
+      display: block;
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: 58px 0;
+      border-bottom: 1px solid var(--border);
+      animation: riseIn 0.6s ease both;
+    }
+
+    .section-hd {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 34px;
+    }
+
+    .sec-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-style: italic;
+      flex-shrink: 0;
+    }
+
+    .sec-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .sec-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 30px 34px;
+    }
+
+    /* ── BIBLE VERSE ── */
+    .verse-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-style: italic;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .verse-ref {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 22px;
+    }
+
+    .reflection {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.78;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+
+    .copyright {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 18px;
+    }
+
+    /* ── QUOTE ── */
+    .quote-card {
+      border-left: 3px solid var(--gold);
+    }
+
+    .quote-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-style: italic;
+      line-height: 1.58;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .quote-attr {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 22px;
+    }
+
+    /* ── NEWS ── */
+    .news-topic { margin-bottom: 46px; }
+    .news-topic:last-child { margin-bottom: 0; }
+
+    .topic-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      color: var(--gold);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 4px;
+      margin-bottom: 18px;
+    }
+
+    .story {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 22px 26px;
+      margin-bottom: 14px;
+    }
+    .story:last-child { margin-bottom: 0; }
+
+    .story-hl {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.38;
+      margin-bottom: 12px;
+    }
+
+    .story-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.76;
+      margin-bottom: 14px;
+    }
+
+    .rabbit {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      line-height: 1.6;
+    }
+    .rabbit strong { color: var(--gold-dim); font-weight: 600; }
+
+    /* ── BOOKS ── */
+    .book-card { margin-bottom: 26px; }
+    .book-card:last-child { margin-bottom: 0; }
+
+    .book-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .book-author {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 26px;
+    }
+
+    .idea {
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
+    .idea:first-of-type { margin-top: 0; }
+
+    .idea-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .idea-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.74;
+    }
+
+    /* ── FOOD ── */
+    .food-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .food-sub {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 26px;
+    }
+
+    .food-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 580px) { .food-grid { grid-template-columns: 1fr; } }
+
+    .food-sec { border-top: 1px solid var(--border); padding-top: 16px; }
+
+    .food-sec-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 8px;
+    }
+
+    .food-sec-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.72;
+    }
+
+    .bottom-line {
+      margin-top: 24px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+
+    .bl-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .bl-text {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.68;
+    }
+
+    /* ── RESEARCH ── */
+    .research-card { margin-bottom: 20px; }
+    .research-card:last-child { margin-bottom: 0; }
+
+    .r-journal {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 10px;
+    }
+
+    .r-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    .r-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.76;
+      margin-bottom: 16px;
+    }
+
+    .takeaway {
+      background: var(--tag-bg);
+      border-left: 2px solid var(--gold);
+      border-radius: 0 4px 4px 0;
+      padding: 12px 16px;
+    }
+
+    .takeaway strong {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      font-weight: 600;
+    }
+
+    .takeaway p {
+      font-size: 14px;
+      color: var(--text-sec);
+      margin-top: 5px;
+      line-height: 1.65;
+    }
+
+    /* ── PROTOCOL ── */
+    .p-source {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 5px;
+    }
+
+    .p-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 26px;
+    }
+
+    .p-sec { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
+    .p-sec:first-of-type { margin-top: 0; }
+
+    .p-sec-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 8px;
+    }
+
+    .p-sec-body {
+      font-size: 14px;
+      color: var(--text-sec);
+      line-height: 1.75;
+    }
+
+    .specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .spec {
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 0 48px;
+      text-align: center;
+    }
+
+    .footer-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .footer-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    @media (max-width: 620px) {
+      header { padding: 38px 0 34px; }
+      .section { padding: 40px 0; }
+      .card { padding: 22px 20px; }
+      .story { padding: 18px 18px; }
+      .quote-text { font-size: 18px; }
+      .verse-text { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header>
+    <div class="eyebrow">Edition No. 2 &nbsp;·&nbsp; Nathan G.</div>
+    <h1>The Daily Ledger</h1>
+    <div class="dateline">Wednesday, June 3, 2026</div>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-n">14</span><span class="stat-l">Stories</span></div>
+      <div class="stat"><span class="stat-n">3</span><span class="stat-l">Books</span></div>
+      <div class="stat"><span class="stat-n">~15</span><span class="stat-l">Min Read</span></div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ BIBLE VERSE ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">I</span>
+      <span class="sec-title">Bible Verse</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="card">
+      <div class="verse-text">"Consider it a great joy, my brothers and sisters, whenever you experience various trials, because you know that the testing of your faith produces endurance. And let endurance have its full effect, so that you may be mature and complete, lacking nothing."</div>
+      <div class="verse-ref">James 1:2–4 &nbsp;·&nbsp; CSB</div>
+      <div class="reflection">
+        James isn't asking you to pretend hardship is easy — he's making a structural argument about how character is built. Endurance isn't something you develop in calm water; it gets produced specifically under pressure, when your defaults aren't working. The word "complete" here means whole, lacking nothing — not a comfortable life, but a full one. That reframe changes how you look at the hard thing in front of you right now: it's not in the way of your growth, it is the growth.
+      </div>
+      <div class="copyright">Scripture quotations marked CSB have been taken from the Christian Standard Bible®, Copyright © 2017 by Holman Bible Publishers.</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ QUOTE ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">II</span>
+      <span class="sec-title">Quote of the Day</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="card quote-card">
+      <div class="quote-text">"We all have self-doubt. You don't deny it, but you also don't capitulate to it. You embrace it."</div>
+      <div class="quote-attr">Kobe Bryant</div>
+      <div class="reflection">
+        This is a more honest take on mental toughness than most people offer. Kobe isn't claiming he had no doubts — he's describing what to do with them. Denial creates brittleness; capitulation creates paralysis. Embracing self-doubt means staying in relationship with it — understanding where it's pointing at a real weakness versus where it's just noise — and moving anyway. That's the discipline: not the absence of fear, but the refusal to let it make decisions for you.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ NEWS ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">III</span>
+      <span class="sec-title">Today's News</span>
+      <span class="sec-rule"></span>
+    </div>
+
+    <!-- Health & Longevity -->
+    <div class="news-topic">
+      <div class="topic-tag">Health &amp; Longevity</div>
+
+      <div class="story">
+        <div class="story-hl">The Gene That Makes You Grow Fast Also Makes You Age Faster</div>
+        <div class="story-body">Researchers at Hebrew University, Technion, and the University of East Anglia used CRISPR to modify the vgll3 gene in African turquoise killifish and found a hard evolutionary trade-off: faster early growth and earlier reproduction came with shorter lifespans and higher rates of age-related tumors. Published Monday in Nature Communications, the study provides the first direct experimental evidence for antagonistic pleiotropy — the theory that evolution favors genes with early-life benefits even when they impose long-term costs. Because vgll3 is conserved in humans, the finding has real implications: it may explain why cancer-associated genes persisted through evolution in the first place — they were paying dividends when it mattered.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "antagonistic pleiotropy cancer aging vgll3" to understand the evolutionary argument for why cancer genes weren't selected out — and what researchers think we might be able to do about separating the early benefits from the late costs.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">Air Pollution Is Still Killing the Brain — Even as the Air Gets Cleaner</div>
+        <div class="story-body">A new analysis tracking PM2.5-attributable dementia deaths from 2000 to 2024 found a troubling pattern: despite meaningful reductions in particulate pollution between 2013 and 2024, dementia deaths linked to fine particulate matter rose from 106,000 to over 171,000 annually. The likely explanation is that a larger aging population with longer cumulative exposure is now hitting peak vulnerability all at once. Particulate matter doesn't just inflame lungs — it crosses into the brain and triggers the same neuroinflammatory cascades associated with Alzheimer's disease. Cleaner air isn't enough if the damage from decades of prior exposure is still running its course.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "PM2.5 neuroinflammation Alzheimer's mechanism" to understand how air pollution travels from lungs to brain and what biological damage it causes once it gets there.</div>
+      </div>
+    </div>
+
+    <!-- Science & Technology -->
+    <div class="news-topic">
+      <div class="topic-tag">Science &amp; Technology</div>
+
+      <div class="story">
+        <div class="story-hl">Long COVID's Signatures Are in Your Emotional Brain, Not Your Fatigue Centers</div>
+        <div class="story-body">New brain scan research shows that the neural signatures of long COVID cluster in regions that process emotion — including the amygdala and related circuits — rather than in areas associated with fatigue or cognitive load. This is a meaningful reorientation. It could explain why so many long COVID patients report mood instability and emotional sensitivity disproportionate to what their cognitive tests show. It also suggests that current treatment approaches focused on fatigue management may be addressing the symptom while missing the source. Emotion-processing networks in the brain may be the real site of disruption.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "long COVID amygdala emotional dysregulation treatment" to see what brain-targeted interventions — from neuromodulation to targeted therapy — researchers are now exploring.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">Pigeons May Navigate With Their Livers, Not Their Beaks</div>
+        <div class="story-body">Scientists have long suspected pigeons detect Earth's magnetic field through magnetite crystals, but where those crystals live has been debated for decades. A new study upends the leading theory — that they're in specialized beak cells — and suggests the mechanism may actually involve iron-rich immune cells in the liver. If confirmed, this rewrites the biology of animal navigation entirely, suggesting that magnetic sensing in vertebrates is distributed across unexpected tissue types rather than concentrated in the nervous system. It also opens interesting questions about how other animals, and potentially humans, interact with electromagnetic environments at the cellular level.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "magnetoreception vertebrates iron cells liver" to follow the decades-long detective story of how animals sense magnetic fields — and why it's proven so difficult to pin down.</div>
+      </div>
+    </div>
+
+    <!-- Personal Finance -->
+    <div class="news-topic">
+      <div class="topic-tag">Personal Finance</div>
+
+      <div class="story">
+        <div class="story-hl">Mortgage Rates Are Dipping — But the Housing Market Is Cooling Fast</div>
+        <div class="story-body">The 30-year fixed mortgage rate ticked down slightly to around 6.51% this week after rising nearly 10% from January through May. That's cold comfort: more than half of major U.S. housing markets recorded year-over-year price declines as of March, and economists have stopped predicting rates will fall below 6% anytime soon. Stubborn inflation — the April CPI came in at 3.8% above last year — combined with Iran-related oil price spikes is keeping rates elevated. For buyers waiting on the sidelines hoping for a dramatic rate drop, the message is increasingly clear: this is the environment, so plan accordingly rather than waiting for rescue.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "housing affordability index US cities 2026" to see which cities are seeing the sharpest price declines and what the math looks like for first-time buyers in the current rate environment.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">Social Security Could Cut Benefits by $500 a Month — Here's the Timeline</div>
+        <div class="story-body">A new report projects that without congressional action, Social Security trust fund depletion could trigger automatic benefit reductions averaging $500 per month for current and future retirees. This isn't alarmism — it's baked into current law: when the fund runs dry, benefits must be cut to match incoming revenue. The trust fund depletion timeline has been creeping closer for years, and political will to address it has been minimal across administrations. For anyone under 55, this is a planning variable that needs to be in your retirement math now, not something to address after the cuts arrive.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "Social Security trust fund depletion year estimate 2026" to get current projections on the timeline and what specific benefit reductions look like under different reform scenarios.</div>
+      </div>
+    </div>
+
+    <!-- Psychology & Behavior -->
+    <div class="news-topic">
+      <div class="topic-tag">Psychology &amp; Behavior</div>
+
+      <div class="story">
+        <div class="story-hl">Your Biggest Work Stressor Isn't Your Workload — It's Not Knowing What Your Job Is</div>
+        <div class="story-body">A massive meta-analysis spanning 60 years, 515 studies, and roughly 800,000 workers — published in the Journal of Vocational Behavior — identified role ambiguity as the single strongest predictor of workplace burnout, health decline, and intent to quit. Role ambiguity means you don't clearly know what success looks like in your job, which decisions are yours to make, or how your work is being evaluated. It outranked both workload and interpersonal conflict. Three 2026 forces are quietly making this worse: hybrid return-to-office mandates blurring norms, rapid AI deployment restructuring responsibilities without defining new roles, and post-layoff "stretch" that expands scope without clarifying it. The fix is straightforward and managers rarely provide it: clear scope, explicit success metrics, and defined decision rights.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "role clarity burnout manager intervention" to see the simple, practical steps that reduce ambiguity — and why most organizations resist implementing them even when the evidence is this clear.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">A Tiny Cluster of Neurons Drives Compulsive Eating — Even When You're Full</div>
+        <div class="story-body">UCLA researchers identified a small group of neurons in the midbrain that, when activated experimentally, drove fully satiated mice to compulsively eat high-calorie foods. Deactivate them, and the behavior stopped. The same neurons appear to be implicated in both binge eating and anorexia — depending on whether they're over- or under-activated — and early evidence suggests these are precisely the neurons targeted by GLP-1 drugs like Ozempic and Wegovy. This is a significant mechanistic finding: it points toward the obesity epidemic being partly a story about a specific neural circuit chronically driven off-baseline by environment, and it gives drug developers a much more precise target.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "midbrain neurons food seeking GLP-1 mechanism UCLA" to understand how Ozempic's effects in the brain may be more targeted than previously known — and what that means for future treatments.</div>
+      </div>
+    </div>
+
+    <!-- Fitness & Nutrition -->
+    <div class="news-topic">
+      <div class="topic-tag">Fitness &amp; Nutrition</div>
+
+      <div class="story">
+        <div class="story-hl">A Common Amino Acid Dramatically Improved Survival in Deadly Infection</div>
+        <div class="story-body">Salk Institute researchers found that supplementing methionine — an amino acid found naturally in eggs, meat, and fish — dramatically improved survival rates in mice with severe infections and sepsis. The mechanism was surprising: rather than boosting immune function directly, methionine enhanced kidney filtration, helping the body flush out the excess inflammatory molecules that cause tissue damage and death during overwhelming infection. Published in Cell Metabolism, the study suggests methionine could be relevant not just for acute infection but for other inflammatory conditions and kidney disease. Human trials are needed, but the biology is mechanistically compelling and the amino acid is already widely available in food.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "methionine inflammation kidney filtration mechanism" to understand why the kidney connection surprised researchers and what other inflammatory conditions this pathway might apply to.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">Olive Oil's Main Fat May Accelerate Pancreatic Cancer Growth — Context Matters</div>
+        <div class="story-body">A new study found that oleic acid — the monounsaturated fatty acid that makes up the majority of olive oil — accelerated the growth of pancreatic tumors in animal models. Before you clear the pantry: this study looked at cancer progression in existing tumors, not whether oleic acid initiates cancer in healthy tissue. The distinction matters enormously. Pancreatic cancer cells appear to metabolize oleic acid differently than healthy cells, exploiting it as a fuel source. This is a specific metabolic vulnerability in an existing tumor — not a blanket warning against olive oil in a healthy diet. But it's a nuanced finding worth watching as researchers study dietary fat's role in cancer metabolism more carefully.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "oleic acid pancreatic cancer tumor metabolism" to understand why cancer cells process fats differently — and how this might eventually point toward targeted dietary strategies for cancer patients.</div>
+      </div>
+    </div>
+
+    <!-- Business & Entrepreneurship -->
+    <div class="news-topic">
+      <div class="topic-tag">Business &amp; Entrepreneurship</div>
+
+      <div class="story">
+        <div class="story-hl">Two-Thirds of Entrepreneurs Are Optimistic — and Half Are Going Global</div>
+        <div class="story-body">A UBS survey of 215 business leaders across 26 markets found that 68% are optimistic about the next twelve months despite elevated inflation and geopolitical headwinds. More striking: nearly half are actively planning to relocate operations or expand internationally. The dominant theme is geographic diversification — founders who had their business concentrated in one country are deliberately spreading exposure across multiple markets. The data suggests entrepreneurial confidence in 2026 isn't naive; it's adaptive. The people closest to their customers are betting that mobility and market diversification are better hedges than waiting for any single economy to stabilize.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "entrepreneur international relocation tax jurisdictions 2026" to understand which countries are becoming the new hotspots for founders moving operations — and what the tax and regulatory math actually looks like.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">The Revenue-First Startup Is Beating the VC-Funded One</div>
+        <div class="story-body">A clear shift is underway in startup culture: more founders are choosing customer revenue over venture capital, using no-code tools, pre-sales, paid pilots, and micro-SaaS models to build real businesses before raising a dollar. June's startup community data shows this isn't fringe thinking — it's becoming the default playbook for a growing cohort. The logic is simple and underappreciated: if you can get a customer to pay for something before you've fully built it, you've validated real demand and bought yourself time and equity simultaneously. The VC route still makes sense for capital-intensive businesses, but for software and services, bootstrapping is increasingly the smarter opening move — and the tools to do it have never been more accessible.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "micro-SaaS bootstrapped founder examples 2026" to find specific founders who've built $1M+ ARR businesses without outside funding — and the exact models and pricing strategies they used.</div>
+      </div>
+    </div>
+
+    <!-- Food & Nutrition -->
+    <div class="news-topic">
+      <div class="topic-tag">Food &amp; Nutrition</div>
+
+      <div class="story">
+        <div class="story-hl">Intermittent Fasting Rewires Your Gut Bacteria Alongside the Weight Loss</div>
+        <div class="story-body">A new study of obese adults following an intermittent fasting protocol found not just significant weight loss and improved metabolic markers — but notable, measurable shifts in gut microbiome composition. This is meaningful because the microbiome changes may be doing some of the metabolic work: specific bacterial shifts increase short-chain fatty acid production, improve insulin sensitivity, and reduce systemic inflammation independent of weight change alone. The implication is that the timing of eating matters to the gut — and the gut's response may explain why intermittent fasting produces metabolic benefits that exceed what simple caloric restriction would predict.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "intermittent fasting gut microbiome short-chain fatty acids" to understand which specific bacterial species shift during fasting windows and why that may explain the outsized metabolic benefits researchers keep finding.</div>
+      </div>
+
+      <div class="story">
+        <div class="story-hl">AI Is Bringing Personalized Nutrition to Everyone — Slowly Getting It Right</div>
+        <div class="story-body">Dietitians and food researchers are converging on the same prediction for 2026: personalized nutrition is going mainstream. What once required expensive genetic panels and specialty clinics is now being delivered through AI-powered apps integrating wearable data, food logs, and self-reported biomarkers. The quality of recommendations is improving as the training data grows. The real caveat: AI nutrition advice is only as good as the underlying science, and that science still has significant gaps around individual dietary response. One-size-fits-all dietary advice is becoming less dominant by the month — but the replacement needs to be evidence-driven, not just algorithmically confident.</div>
+        <div class="rabbit"><strong>Go deeper:</strong> Search "personalized nutrition AI evidence limitations 2026" to understand what markers actually predict individual dietary response — and where the science is solid versus where it's still catching up to the marketing.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ BOOKS ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">IV</span>
+      <span class="sec-title">Book Ideas</span>
+      <span class="sec-rule"></span>
+    </div>
+
+    <!-- Book 1 -->
+    <div class="card book-card">
+      <div class="book-title">Extreme Ownership</div>
+      <div class="book-author">Jocko Willink &amp; Leif Babin</div>
+
+      <div class="idea">
+        <div class="idea-title">Own Everything — Without Exception</div>
+        <div class="idea-body">The defining idea: if your team fails, you failed. Not your subordinates, not the conditions, not the bad luck — you. Willink and Babin learned this in Ramadi, where the cost of failure was immediate and visible. In business, the feedback loops are slower but the principle is identical. Taking full ownership isn't self-flagellation; it's locating the lever. If you own the outcome, you can change the outcome. If you blame external factors, you've surrendered your ability to fix anything. Ownership is the precondition to improvement.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Cover and Move: Teams Win Together or Lose Together</div>
+        <div class="idea-body">In SEAL teams, units suppress enemy fire so another can advance — and they rotate. No element stays exposed forever. In organizations, departments tend to optimize for their own metrics at the expense of the broader mission. Willink's point is that subunits must support each other even when it costs them individually. The mission is the point. Your department's score isn't. When you see another team struggling, the Extreme Ownership move is to ask "how do I help" — not "how does this affect my numbers."</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Simple Plans Survive Contact; Complex Plans Don't</div>
+        <div class="idea-body">Complexity is the enemy of execution under pressure. Willink drills this throughout: if your team can't explain the plan simply, it will fall apart the moment things get chaotic — and they always get chaotic. This doesn't mean dumbing things down; it means having the discipline to distill critical elements and communicate them with enough clarity that the people executing can make good decisions without you in the room. If you have to explain the plan for 45 minutes, the plan is already broken.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Prioritize and Execute — One Problem at a Time</div>
+        <div class="idea-body">When multiple crises hit simultaneously, the instinct is to tackle them all at once — which means you effectively tackle none. The Extreme Ownership move is to slow down mentally, identify the highest-priority problem, solve it fully, then move to the next. Panic is contagious downward through a team; so is composure. When a leader calmly works the problem, the team follows. Composure isn't a soft skill — in a crisis, it's the most valuable tactical asset in the room.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Decentralized Command: Your Best People Can Only Perform If They Can Decide</div>
+        <div class="idea-body">A leader who must approve every decision is a bottleneck, not an asset. Willink argues that real leadership means transferring enough context, mission clarity, and decision authority that your people can act without waiting for you. This requires deep upfront investment — making sure everyone understands the "why" — but it pays off the moment the situation changes and you can't be reached. The alternative, micromanagement, scales to exactly zero. The best teams win in the gap between instructions.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Discipline Equals Freedom</div>
+        <div class="idea-body">The most paradox-sounding idea in the book is also the most true. The more disciplined your routines, systems, and standards, the more cognitive bandwidth you free up for actual decisions. Freedom isn't the absence of structure — it's what emerges when structure handles the low-level stuff automatically. The person with no routine isn't free; they're perpetually reacting. The person who wakes at 4:30, trains, and plans their day in advance has already made a hundred decisions before most people are out of bed — and that head start compounds every single day.</div>
+      </div>
+    </div>
+
+    <!-- Book 2 -->
+    <div class="card book-card">
+      <div class="book-title">Deep Work</div>
+      <div class="book-author">Cal Newport</div>
+
+      <div class="idea">
+        <div class="idea-title">Shallow Work Is Multiplying — and Getting Rewarded for the Wrong Reasons</div>
+        <div class="idea-body">Newport's core diagnosis: most modern knowledge workers spend the majority of their time on shallow tasks — email, meetings, pings, social media — that feel productive but create almost no lasting value. Worse, these behaviors are incentivized because they generate visible activity. Being responsive and constantly available has become a proxy for performance. But the economy increasingly rewards rare, hard-to-produce cognitive output — the kind that requires extended, uninterrupted focus to create. Busyness and productivity are not the same thing. Most people conflate them every day.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Attention Is the Scarce Resource of the Knowledge Economy</div>
+        <div class="idea-body">The ability to focus deeply on a cognitively demanding task for extended periods is the most valuable professional skill available — and most people are slowly losing it through habitual distraction. Newport draws on neuroscience to argue that attentional capacity isn't fixed; it atrophies when neglected and strengthens when trained. Every time you check your phone mid-task, you're not just losing a few seconds — you're training your attention circuits to expect constant stimulation and making sustained concentration harder over time. The decay is gradual, invisible, and almost universal.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Schedule Depth Like a Meeting — Because It Is One</div>
+        <div class="idea-body">Newport's most actionable prescription: stop trying to "find time" for focused work and start blocking it deliberately. Treat deep work sessions as non-negotiable appointments — with yourself, doing the most important thing you can do. The distinction between "I'll work on this when I have time" and "Tuesday 9 to noon is for this, period" determines whether the work actually happens. Deep work doesn't emerge in the gaps between other commitments. You have to build the container for it before anything else gets scheduled.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Quit Social Media — Or at Least Stop Being Casual About It</div>
+        <div class="idea-body">Newport's argument isn't moralistic. Social media platforms are engineered to hijack your attention at the lowest possible cost, and regular use trains your brain to require constant low-grade stimulation. That rewiring has a direct cost to your ability to sit with hard problems and think slowly through something difficult. He's not saying social media has zero value — he's saying most people have never honestly calculated the cost. The craftsman's question is: does this tool help me do my best work, or does it make it harder? Answer that honestly before deciding to keep using it.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Embrace Boredom as Mental Training</div>
+        <div class="idea-body">Newport makes a point most people miss: you can't train for depth during scheduled focus sessions if you spend every other moment seeking stimulation. Waiting in line? Open Instagram. Ad break? Check email. This constant flinching from boredom prevents the mental recovery that deep work requires. Newport prescribes intentional periods of boredom — not as punishment, but as training for your attention circuits. Boredom is where the mind consolidates, processes, and generates insight. Protecting it isn't laziness; it's maintenance of your most important cognitive tool.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">The Shutdown Ritual: Close the Loops</div>
+        <div class="idea-body">Newport ends his workday with a deliberate sequence: reviewing task lists, capturing open items, planning tomorrow, then verbally saying "shutdown complete." The purpose is neurological. Incomplete tasks occupy mental bandwidth through the Zeigarnik effect — your subconscious keeps working on unresolved problems. The shutdown ritual gives your brain a clear signal that the loops are closed, enabling genuine recovery. Without it, the mind keeps spinning through the evening, and the next morning's focus suffers before you've even started. The shutdown is the last piece of deep work infrastructure most people never install.</div>
+      </div>
+    </div>
+
+    <!-- Book 3 -->
+    <div class="card book-card">
+      <div class="book-title">The Obstacle Is the Way</div>
+      <div class="book-author">Ryan Holiday</div>
+
+      <div class="idea">
+        <div class="idea-title">Perception Is a Choice — the Event Itself Is Neutral</div>
+        <div class="idea-body">Holiday opens with the Stoic premise that events carry no inherent meaning — only the meaning we assign them. This sounds like philosophy until you stress-test it: the same job loss that breaks one person becomes the forcing function that redirects another toward something better. The obstacle doesn't change; the perceiver does. Training yourself to see setbacks as raw material rather than verdicts isn't optimism — it's a deliberate cognitive posture, and it's learnable. Marcus Aurelius practiced it while managing a plague-ravaged empire. You can practice it in a smaller arena.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Amor Fati: Don't Just Accept Difficulty — Use It</div>
+        <div class="idea-body">Amor fati means "love of fate." The Stoics went beyond mere acceptance of hardship — they advocated actively embracing it as the material from which virtue is forged. This isn't toxic positivity or pretending pain doesn't hurt. It's an offensive posture: instead of "why is this happening to me?" you ask "what is this making possible?" The reframe is ancient and battle-tested. The person who asks the second question consistently will, over time, build something from every circumstance that the first-question person cannot.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Action Breaks Paralysis — Move Before You Feel Ready</div>
+        <div class="idea-body">When a setback hits, the worst response is waiting until you feel good about your options. The emotion rarely resolves before you act — it resolves because you act. Holiday draws on Lincoln, Edison, and Rockefeller to show a consistent pattern: decisive forward movement, even imperfect movement, breaks the paralysis that emotional states create. "What is the next right action?" is a more useful question than "how do I feel about this?" The first question leads somewhere. The second keeps you in place, waiting for a feeling that isn't coming on its own.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">Persistence Means Exhausting Your Options, Not Just Your Effort</div>
+        <div class="idea-body">Most people quit not because they've run out of options, but because they've exhausted their initial repertoire of tactics and confused that for the end of the road. Holiday's argument is that real persistence requires creativity: when the first approach fails, try a different angle. When that fails, try a third. Edison's "I've found 10,000 ways that won't work" isn't just a motivational poster — it's a description of a method. The obstacle is real. The question is how many different approaches you're willing to generate before you find the one that works.</div>
+      </div>
+
+      <div class="idea">
+        <div class="idea-title">The Reversal: Use What's in the Way as the Way</div>
+        <div class="idea-body">The most sophisticated version of Holiday's argument: obstacles don't just need to be endured — they can actually be leveraged. The constraint that forces you to build something simpler often produces a better product. The rejection that redirects you leads somewhere you'd never have found otherwise. The limitation that demands creativity produces the breakthrough. This is real and learnable, not just inspirational. It requires training yourself to look at every hard thing and ask: "what is this making possible?" rather than only "what is this preventing?" That shift, done consistently, is the whole game.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOD SPOTLIGHT ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">V</span>
+      <span class="sec-title">Food Spotlight</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="card">
+      <div class="food-name">Creatine Monohydrate</div>
+      <div class="food-sub">Supplement Spotlight</div>
+
+      <div class="food-grid">
+        <div class="food-sec">
+          <div class="food-sec-title">What It Is</div>
+          <div class="food-sec-body">Creatine is a compound synthesized naturally in the body from three amino acids — glycine, arginine, and methionine — and obtained through animal protein, primarily red meat and fish. Humans have been consuming creatine through diet for as long as we've eaten animals. The supplement form, creatine monohydrate, simply delivers a concentrated dose of what your body already uses and recognizes. There's nothing foreign about it.</div>
+        </div>
+
+        <div class="food-sec">
+          <div class="food-sec-title">How It Works in the Body</div>
+          <div class="food-sec-body">Creatine's job is to regenerate ATP — adenosine triphosphate, your body's energy currency — during short, high-intensity efforts. It saturates phosphocreatine stores in muscle tissue, letting you squeeze out more reps, sprint harder, and recover faster between efforts. Think of it as expanding your short-term power reserve. It doesn't directly build muscle; it lets you train harder, and that training builds the muscle.</div>
+        </div>
+
+        <div class="food-sec">
+          <div class="food-sec-title">What the Research Actually Shows</div>
+          <div class="food-sec-body">Creatine monohydrate is the most-studied ergogenic supplement in the history of sports science — by a wide margin. Hundreds of randomized controlled trials confirm consistent benefits: increased strength, greater lean mass gains, and improved power output across multiple sports. Emerging research is also showing benefits for cognitive performance under sleep deprivation or high mental load, and potential neuroprotective effects in aging populations. The evidence base is unusually clean.</div>
+        </div>
+
+        <div class="food-sec">
+          <div class="food-sec-title">Honest Caveats</div>
+          <div class="food-sec-body">Creatine causes water retention in muscle tissue — which is actually part of the mechanism, not a side effect to minimize. Some people are non-responders because they already have near-saturated creatine stores through high meat consumption. Concerns about kidney damage in healthy people have been studied extensively and are not supported by the evidence. If you have pre-existing kidney disease, talk to a physician first before supplementing.</div>
+        </div>
+      </div>
+
+      <div class="bottom-line">
+        <div class="bl-label">The Bottom Line</div>
+        <div class="bl-text">Yes — creatine monohydrate belongs in virtually any whole-foods diet that includes resistance training. The evidence is overwhelming, the cost is low ($20–30 for months of supply), and the risk profile in healthy people is excellent. Three to five grams per day, consistently. No loading phase required. Take it with food if you're sensitive to GI discomfort. It's one of the rare supplements where the answer is genuinely simple: the evidence is there, the mechanism is understood, and it works.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ RESEARCH SPOTLIGHT ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">VI</span>
+      <span class="sec-title">Research Spotlight</span>
+      <span class="sec-rule"></span>
+    </div>
+
+    <div class="card research-card">
+      <div class="r-journal">Nature Communications &nbsp;·&nbsp; June 2, 2026</div>
+      <div class="r-title">The Gene That Makes You Grow Fast Also Makes You Age Faster — and Here's the Proof</div>
+      <div class="r-body">An international team from Hebrew University, Technion, and the University of East Anglia set out to directly test antagonistic pleiotropy — the evolutionary theory that some genes deliver early-life advantages at the cost of accelerated aging. They used CRISPR to modify the vgll3 gene in African turquoise killifish, a species popular in aging research for its compressed, measurable lifespan. Fish with altered vgll3 grew faster, reached sexual maturity earlier, and produced more offspring — exactly what evolution would select for. But they also died younger and developed significantly more age-related tumors, including melanoma-like cancers. This is the first direct experimental evidence for the trade-off in a vertebrate. Because vgll3 is conserved in humans, the implications are real: it may help explain why cancer-prone genes weren't eliminated by natural selection — they were paying evolutionary dividends when survival to reproduction was all that mattered. Researchers say the next step is exploring whether the early-life benefits and late-life costs can be separated.</div>
+      <div class="takeaway">
+        <strong>The Takeaway:</strong>
+        <p>Evolution didn't keep cancer genes in spite of their costs — it kept them because of their early benefits, and separating those two things is now a viable scientific goal.</p>
+      </div>
+    </div>
+
+    <div class="card research-card">
+      <div class="r-journal">Journal of Vocational Behavior &nbsp;·&nbsp; 2026</div>
+      <div class="r-title">Not Knowing What Your Job Is Causes More Burnout Than Doing Too Much of It</div>
+      <div class="r-body">Gargi Sawhney and colleagues at Auburn University, Old Dominion University, and the University of Illinois Urbana-Champaign spent seven years pulling together a meta-analysis of 515 studies spanning six decades and roughly 800,000 workers. Their goal was to identify which workplace stressors most strongly predict burnout, physical health decline, and intent to quit. The winner — by a significant margin — wasn't workload or interpersonal conflict. It was role ambiguity: not knowing what your job actually requires, how your performance is being evaluated, or which decisions belong to you. The analysis found that role ambiguity is worsening in 2026, driven by three forces operating simultaneously: hybrid return-to-office policies that blur norms and expectations, rapid AI deployment that restructures responsibilities without redefining roles, and post-layoff scope creep that expands what people are responsible for without ever clarifying what success looks like. The researchers found that role clarity is among the highest-leverage, lowest-cost interventions an organization can make — and most organizations never make it.</div>
+      <div class="takeaway">
+        <strong>The Takeaway:</strong>
+        <p>Knowing exactly what your job is, what success looks like, and which decisions are yours to make is more protective against burnout than simply having less to do.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PROTOCOL SPOTLIGHT ═══════════════ -->
+  <section class="section">
+    <div class="section-hd">
+      <span class="sec-num">VII</span>
+      <span class="sec-title">Protocol Spotlight</span>
+      <span class="sec-rule"></span>
+    </div>
+    <div class="card">
+      <div class="p-source">Andrew Huberman &nbsp;·&nbsp; Huberman Lab</div>
+      <div class="p-name">Morning Sunlight Viewing</div>
+
+      <div class="p-sec">
+        <div class="p-sec-title">What It Is and Why It Matters</div>
+        <div class="p-sec-body">Getting natural sunlight into your eyes within the first 30–60 minutes of waking is Huberman's most consistently recommended habit — the one he calls foundational to everything else. It's free, it takes almost no time, and it has an outsized effect on alertness, mood, sleep quality, and hormonal timing throughout the day. Most people never do it because they go from bedroom to phone to car to indoor office without ever stepping outside. That's not just a missed opportunity — it's a biological error that compounds daily.</div>
+      </div>
+
+      <div class="p-sec">
+        <div class="p-sec-title">The Mechanism</div>
+        <div class="p-sec-body">Natural light enters the eye and activates specialized photoreceptors — melanopsin-containing intrinsically photosensitive retinal ganglion cells — that send a direct signal to the suprachiasmatic nucleus (SCN), the brain's master circadian clock. This morning light signal triggers an early cortisol pulse, which drives alertness and sets the hormonal rhythm for the rest of the day. It also starts a biological timer: roughly 12–16 hours after that light signal, melatonin release begins, making it easier to fall asleep at the right time. Miss the morning signal consistently and the whole clock drifts — affecting energy, mood, sleep onset, and recovery. Regular morning light is essentially recalibrating your internal clock every single day.</div>
+      </div>
+
+      <div class="p-sec">
+        <div class="p-sec-title">The Specs</div>
+        <div class="p-sec-body">The dose varies with conditions — cloudy and overcast days require longer exposure because relevant light frequencies are attenuated. Go outside rather than through a window: glass filters out the wavelengths that matter. No sunglasses. Prescription glasses are fine. Look toward the general direction of the sun without staring directly at it.</div>
+        <div class="specs">
+          <span class="spec">Clear day: 5–10 min</span>
+          <span class="spec">Partly cloudy: 15–20 min</span>
+          <span class="spec">Overcast / winter: 20–30 min</span>
+          <span class="spec">Within 60 min of waking</span>
+          <span class="spec">Eyes open, outdoors</span>
+          <span class="spec">No sunglasses</span>
+        </div>
+      </div>
+
+      <div class="p-sec">
+        <div class="p-sec-title">How to Start This Week</div>
+        <div class="p-sec-body">Tomorrow morning, before you look at your phone, step outside. Take your coffee. Walk to the end of the driveway. Stand in the yard for five minutes. Even three minutes of direct outdoor light is categorically better than zero. Don't make it a project — anchor it to something you already do: morning coffee, letting the dog out, getting the mail. Once it's a reflex, extend the duration. Week one's goal is simply to get outside before you open a screen. That's it. Build the habit first, optimize the dose later.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer>
+    <div class="footer-name">The Daily Ledger</div>
+    <div class="footer-sub">Edition No. 2 &nbsp;·&nbsp; June 3, 2026 &nbsp;·&nbsp; Nathan G.</div>
+  </footer>
+
+</div>
+</body>
+</html>
