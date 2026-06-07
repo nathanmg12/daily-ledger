@@ -1,0 +1,41 @@
+# .github/workflows/generate-cards.yml
+#
+# THE DAILY LEDGER — Daily Card Generation Pipeline
+#
+# Runs every day at 3:00 AM ET (08:00 UTC)
+# Generates 2 news cards per interest (36 total) and writes them to Supabase
+#
+# Required GitHub Secrets:
+#   ANTHROPIC_API_KEY      — your Anthropic API key
+#   SUPABASE_URL           — your Supabase project URL
+#   SUPABASE_SERVICE_KEY   — your Supabase service role key (not the anon key)
+
+name: Generate Daily Cards
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC = 3:00 AM ET
+  workflow_dispatch:        # allows manual trigger from GitHub Actions tab
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run card generation script
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/generate-cards.js
