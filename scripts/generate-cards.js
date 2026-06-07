@@ -7,14 +7,12 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
-import ws from "ws";
 
 // ── Clients ───────────────────────────────────────────────
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  { global: { fetch }, realtime: { transport: ws } }
+  process.env.SUPABASE_SERVICE_KEY
 );
 
 // ── Constants ─────────────────────────────────────────────
@@ -33,13 +31,13 @@ Not a professor. Not a content marketer. Someone who respects the reader's time
 and intelligence, and gets to the point without being cold about it.
 
 Voice rules:
-- Write with varied rhythm. Long sentences carry nuance. Short ones land hard. Mix them. Do not default to short sentences as a style — that is its own form of AI slop. Do not string together fragments to sound punchy.
+- Write with varied rhythm. Long sentences carry nuance. Short ones land hard. Mix them. Do not default to short sentences as a style. Do not string together fragments to sound punchy.
 - No em-dashes. Restructure the sentence instead.
 - Never open with filler: "In today's world," "It's worth noting," "Delve into," "Certainly," etc. Start with the thing itself.
 - Be specific. Use real numbers, real names, real details. "A study of 22,000 people" is better than "research suggests."
 - No hedging chains. If something is true, say it. If uncertain, say so once and move on.
 - Stay neutral. Never voice opinions. Present findings and context as they are. Do not editorialize or nudge the reader toward any conclusion.
-- End with weight. The last sentence should land — a practical implication, a reframing, or a quiet observation. Never trail off.
+- End with weight. The last sentence should land. Never trail off.
 - Write to be read once, not skimmed. Prose matters. Each sentence should earn its place.
 
 Formatting rules:
@@ -55,7 +53,7 @@ function buildNewsPrompt(interestName) {
 You are writing a news card for The Daily Ledger.
 
 Search for a real, recent news story published within the last 72 hours on the
-topic: ${interestName}. The story should be substantive — something that affects
+topic: ${interestName}. The story should be substantive -- something that affects
 how the reader understands the world, not a trending story forgotten by tomorrow.
 
 For the summary field: three to four sentences of plain-English explanation. No
@@ -69,7 +67,7 @@ Frame it as a question.
 Return the following JSON exactly:
 
 {
-  "headline": "A clean, factual headline — not a sensational one",
+  "headline": "A clean, factual headline",
   "summary": "Three to four sentences of plain-English summary...",
   "source_name": "Publication name",
   "source_url": "https://...",
@@ -145,19 +143,19 @@ async function main() {
         console.log(`Generating card ${i + 1}/${CARDS_PER_INTEREST} for: ${interest.name}`);
         const content = await generateNewsCard(interest);
         await saveCard(interest, content);
-        console.log(`  ✓ Saved: "${content.headline}"\n`);
+        console.log(`  Saved: "${content.headline}"\n`);
         totalGenerated++;
         await new Promise((resolve) => setTimeout(resolve, 1500));
       } catch (err) {
-        console.error(`  ✗ Failed for ${interest.name} (card ${i + 1}): ${err.message}\n`);
+        console.error(`  Failed for ${interest.name} (card ${i + 1}): ${err.message}\n`);
         totalFailed++;
       }
     }
   }
 
-  console.log("─────────────────────────────────────");
+  console.log("-------------------------------------");
   console.log(`Done. Generated: ${totalGenerated} | Failed: ${totalFailed}`);
-  console.log("─────────────────────────────────────");
+  console.log("-------------------------------------");
 
   if (totalFailed > 0) process.exit(1);
 }
