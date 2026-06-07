@@ -7,12 +7,14 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
+import ws from "ws";
 
 // ── Clients ───────────────────────────────────────────────
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
+  { global: { fetch }, realtime: { transport: ws } }
 );
 
 // ── Constants ─────────────────────────────────────────────
@@ -20,7 +22,6 @@ const CARDS_PER_INTEREST = 2;
 const NEWS_EXPIRY_HOURS = 72;
 
 // ── Master voice system prompt ────────────────────────────
-// Prepended to every Claude API call regardless of card type.
 const VOICE_PROMPT = `
 You are a writer for The Daily Ledger — a daily reading app built for people
 who want to learn something real without being manipulated into staying longer
@@ -90,11 +91,9 @@ async function generateNewsCard(interest) {
     ],
   });
 
-  // Extract the text content from the response
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock) throw new Error("No text block in response");
 
-  // Parse and validate the JSON
   const content = JSON.parse(textBlock.text.trim());
   const requiredFields = ["headline", "summary", "source_name", "source_url", "published_at", "rabbit_hole"];
   for (const field of requiredFields) {
@@ -128,7 +127,6 @@ async function saveCard(interest, content) {
 async function main() {
   console.log("Starting Daily Ledger card generation...\n");
 
-  // Fetch all active interests that have news enabled
   const { data: interests, error } = await supabase
     .from("interests")
     .select("id, name, slug")
@@ -149,8 +147,6 @@ async function main() {
         await saveCard(interest, content);
         console.log(`  ✓ Saved: "${content.headline}"\n`);
         totalGenerated++;
-
-        // Small delay between API calls to avoid rate limits
         await new Promise((resolve) => setTimeout(resolve, 1500));
       } catch (err) {
         console.error(`  ✗ Failed for ${interest.name} (card ${i + 1}): ${err.message}\n`);
