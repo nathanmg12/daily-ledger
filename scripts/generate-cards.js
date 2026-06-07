@@ -1,30 +1,24 @@
 // scripts/generate-cards.js
 //
 // THE DAILY LEDGER — Card Generation Script
-//
-// Called by GitHub Actions every morning at 3:00 AM ET.
-// Generates 2 news cards per interest and writes them to Supabase.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 
-// ── Clients ───────────────────────────────────────────────
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// ── Constants ─────────────────────────────────────────────
 const CARDS_PER_INTEREST = 2;
 const NEWS_EXPIRY_HOURS = 72;
+const DELAY_BETWEEN_CALLS_MS = 8000; // 8 seconds to stay under rate limit
 
-// ── Master voice system prompt ────────────────────────────
 const VOICE_PROMPT = `
 You are a writer for The Daily Ledger — a daily reading app built for people
 who want to learn something real without being manipulated into staying longer
-than they should. Every card you write is finite, purposeful, and complete. The
-reader should feel informed and satisfied, not hungry for more in an anxious way.
+than they should. Every card you write is finite, purposeful, and complete.
 
 Write like a smart, well-read friend who happens to know a lot about this topic.
 Not a professor. Not a content marketer. Someone who respects the reader's time
@@ -34,50 +28,46 @@ Voice rules:
 - Write with varied rhythm. Long sentences carry nuance. Short ones land hard. Mix them. Do not default to short sentences as a style. Do not string together fragments to sound punchy.
 - No em-dashes. Restructure the sentence instead.
 - Never open with filler: "In today's world," "It's worth noting," "Delve into," "Certainly," etc. Start with the thing itself.
-- Be specific. Use real numbers, real names, real details. "A study of 22,000 people" is better than "research suggests."
+- Be specific. Use real numbers, real names, real details.
 - No hedging chains. If something is true, say it. If uncertain, say so once and move on.
-- Stay neutral. Never voice opinions. Present findings and context as they are. Do not editorialize or nudge the reader toward any conclusion.
+- Stay neutral. Never voice opinions. Do not editorialize.
 - End with weight. The last sentence should land. Never trail off.
-- Write to be read once, not skimmed. Prose matters. Each sentence should earn its place.
 
 Formatting rules:
 - Return only valid JSON. No preamble, no explanation, no markdown code fences.
 - Match the exact field names and structure specified in the prompt.
 - All text values are plain strings. No markdown inside JSON values.
-- Do not add fields that aren't in the spec.
+- Do not add fields that are not in the spec.
 `.trim();
 
-// ── News card prompt ──────────────────────────────────────
 function buildNewsPrompt(interestName) {
   return `
 You are writing a news card for The Daily Ledger.
 
-Search for a real, recent news story published within the last 72 hours on the
-topic: ${interestName}. The story should be substantive -- something that affects
-how the reader understands the world, not a trending story forgotten by tomorrow.
+Search for a real, recent news story published within the last 72 hours on the topic: ${interestName}.
+The story should be substantive -- something that affects how the reader understands the world.
 
-For the summary field: three to four sentences of plain-English explanation. No
-jargon. No hype. State what happened, what it means, and why it matters. Do not
-editorialize. Do not tell the reader how to feel about it.
-
-For the rabbit_hole field: write a single curiosity question the story naturally
-raises. It should feel like a natural next thought, not a clickbait prompt.
-Frame it as a question.
-
-Return the following JSON exactly:
+Return ONLY this JSON object, with no text before or after it:
 
 {
   "headline": "A clean, factual headline",
-  "summary": "Three to four sentences of plain-English summary...",
+  "summary": "Three to four sentences of plain-English summary",
   "source_name": "Publication name",
-  "source_url": "https://...",
+  "source_url": "https://example.com",
   "published_at": "YYYY-MM-DD",
   "rabbit_hole": "A single curiosity question the story raises?"
 }
 `.trim();
 }
 
-// ── Generate a single news card via Claude API ────────────
+// Extract JSON from response even if there's surrounding text
+function extractJSON(text) {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error("No JSON object found in response");
+  return JSON.parse(text.slice(start, end + 1));
+}
+
 async function generateNewsCard(interest) {
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-6",
@@ -92,7 +82,7 @@ async function generateNewsCard(interest) {
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock) throw new Error("No text block in response");
 
-  const content = JSON.parse(textBlock.text.trim());
+  const content = extractJSON(textBlock.text);
   const requiredFields = ["headline", "summary", "source_name", "source_url", "published_at", "rabbit_hole"];
   for (const field of requiredFields) {
     if (!content[field]) throw new Error(`Missing field: ${field}`);
@@ -101,7 +91,6 @@ async function generateNewsCard(interest) {
   return content;
 }
 
-// ── Write a card to Supabase ──────────────────────────────
 async function saveCard(interest, content) {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + NEWS_EXPIRY_HOURS);
@@ -121,7 +110,6 @@ async function saveCard(interest, content) {
   if (error) throw new Error(`Supabase insert failed: ${error.message}`);
 }
 
-// ── Main ──────────────────────────────────────────────────
 async function main() {
   console.log("Starting Daily Ledger card generation...\n");
 
@@ -145,11 +133,13 @@ async function main() {
         await saveCard(interest, content);
         console.log(`  Saved: "${content.headline}"\n`);
         totalGenerated++;
-        await new Promise((resolve) => setTimeout(resolve, 1500));
       } catch (err) {
         console.error(`  Failed for ${interest.name} (card ${i + 1}): ${err.message}\n`);
         totalFailed++;
       }
+
+      // Always wait between calls, whether success or failure
+      await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_CALLS_MS));
     }
   }
 
