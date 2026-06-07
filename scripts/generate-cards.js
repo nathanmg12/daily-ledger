@@ -80,7 +80,7 @@ Return the following JSON exactly:
 // ── Generate a single news card via Claude API ────────────
 async function generateNewsCard(interest) {
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens: 1000,
     tools: [{ type: "web_search_20250305", name: "web_search" }],
     system: VOICE_PROMPT,
