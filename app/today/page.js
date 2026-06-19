@@ -12,7 +12,19 @@ async function getUserTopicCount(supabase, userId) {
   if (error) return 0
   return data.length
 }
+async function markCardsSeen(supabase, userId, cards) {
+  if (!cards.length) return
 
+  const rows = cards.map((card) => ({
+    user_id: userId,
+    card_id: card.id,
+    seen_at: new Date().toISOString(),
+  }))
+
+  await supabase
+    .from('user_card_history')
+    .upsert(rows, { onConflict: 'user_id,card_id', ignoreDuplicates: true })
+}
 async function getTodayFeed(supabase, userId) {
   const today = new Date().toISOString().split('T')[0]
 
@@ -337,6 +349,7 @@ export default async function TodayPage() {
       getTodayFeed(supabase, user.id),
       getUserTopicCount(supabase, user.id),
     ])
+    await markCardsSeen(supabase, user.id, cards)
   } catch (e) {
     console.error('Feed error:', e.message)
   }
