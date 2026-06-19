@@ -1,0 +1,28 @@
+name: Select Daily Feed
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 9am UTC = 4am ET (5am during EDT)
+  workflow_dispatch:       # allows manual trigger from GitHub UI
+
+jobs:
+  select-feed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Run feed selection
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/select-daily-feed.js
