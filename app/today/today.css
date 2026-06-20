@@ -306,8 +306,8 @@
   font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.25rem;
 }
 .tdl-food-specs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
 }
@@ -377,7 +377,10 @@
 .tdl-protocol-body { padding: 1.25rem 1.5rem; }
 .tdl-protocol-overview { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.25rem; }
 .tdl-protocol-specs {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 .tdl-protocol-science { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; }
 .tdl-protocol-action {

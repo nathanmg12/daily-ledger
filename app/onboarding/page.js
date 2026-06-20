@@ -70,6 +70,9 @@ export default function OnboardingPage() {
       return
     }
 
+    // Seed today's feed immediately so new users don't see an empty state
+    await fetch('/api/seed-feed', { method: 'POST' })
+
     window.location.href = '/today'
   }
 
@@ -82,23 +85,27 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
-
+<div style={{ maxWidth: 680, margin: '0 auto', padding: '2rem 1rem 5rem', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
       {/* Hero */}
-      <div style={{ marginBottom: '2.5rem', paddingBottom: '2rem', borderBottom: '0.5px solid var(--border-med)' }}>
-        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(34px, 5vw, 52px)', fontWeight: 400, lineHeight: 1.1, marginBottom: '1.25rem' }}>
-          Welcome to The Daily <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Ledger</em>
+      <div style={{ marginBottom: '2rem', paddingBottom: '1.75rem', borderBottom: '0.5px solid var(--border-med)' }}>
+        <h1 style={{
+          fontFamily: 'var(--serif)',
+          fontSize: 'clamp(22px, 5vw, 42px)',
+          fontWeight: 400, lineHeight: 1.1, marginBottom: '1.25rem'
+        }}>
+          Welcome. Let's build your daily <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>ledger.</em>
         </h1>
-        <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 560, marginBottom: '1.5rem' }}>
-          The Daily Ledger is your calm corner of the internet, designed to promote your personal growth and knowledge. Each morning, you'll get a new set of "cards" based on the topics you care about: scripture, quotes, quick facts, book ideas, research, and more. No algorithms, no infinite scrolling, no addictive content, and no opinions. Read your Daily Ledger, then go live your day.
-        </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>{[
-            'Pick at least 3 topics you care about below',
-            'Every morning, your cards are ready and waiting',
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {[
+            'Pick at least 3 topics below',
+            'Your cards are ready every morning at 4am',
           ].map((step, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
-              <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--accent)', letterSpacing: '0.08em', minWidth: 16 }}>
+              <span style={{
+                fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--accent)',
+                letterSpacing: '0.08em', minWidth: 16,
+              }}>
                 {String(i + 1).padStart(2, '0')}
               </span>
               <span style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{step}</span>
@@ -109,21 +116,20 @@ export default function OnboardingPage() {
 
       {/* Interest selection */}
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <span style={{
             fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
             padding: '4px 10px', borderRadius: 3, background: 'var(--accent-dim)', color: 'var(--accent)',
-            border: '0.5px solid rgba(181,130,58,0.2)', whiteSpace: 'nowrap'
+            border: '0.5px solid rgba(181,130,58,0.2)', whiteSpace: 'nowrap',
           }}>
             What would you like to read about?
           </span>
-          <div style={{ flex: 1, height: '0.5px', background: 'var(--border-med)' }} />
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginLeft: 'auto' }}>
             {selected.length} selected
           </span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.625rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.5rem', width: '100%' }}>
           {interests.map((interest) => {
             const isSelected = selected.includes(interest.id)
             return (
@@ -131,14 +137,14 @@ export default function OnboardingPage() {
                 key={interest.id}
                 onClick={() => toggleInterest(interest.id)}
                 style={{
-                  padding: '14px 18px',
+                  padding: '12px 14px',
                   borderRadius: 10,
                   border: isSelected ? '0.5px solid var(--accent)' : '0.5px solid var(--border-med)',
                   background: isSelected ? 'var(--accent-dim)' : 'var(--surface)',
                   color: 'var(--text)',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  fontSize: 14,
+                  fontSize: 13,
                   fontFamily: 'var(--sans)',
                   fontWeight: isSelected ? 500 : 300,
                   transition: 'all 0.15s',
@@ -174,7 +180,7 @@ export default function OnboardingPage() {
             opacity: saving ? 0.6 : 1,
           }}
         >
-          {saving ? 'Saving...' : 'Continue'}
+          {saving ? 'Building your ledger...' : 'Continue'}
         </button>
       </div>
     </div>
