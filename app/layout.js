@@ -2,7 +2,34 @@ import "./globals.css";
 
 export const metadata = {
   title: "The Daily Ledger",
-  description: "Your calm corner of the internet.",
+  description: "Your calm corner of the internet. A finite daily reading app with no algorithm, no ads, and no opinions.",
+  metadataBase: new URL("https://thedailyledger.app"),
+  openGraph: {
+    title: "The Daily Ledger",
+    description: "Your calm corner of the internet.",
+    url: "https://thedailyledger.app",
+    siteName: "The Daily Ledger",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "The Daily Ledger",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Daily Ledger",
+    description: "Your calm corner of the internet.",
+    images: ["/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/icon-192.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }) {
