@@ -350,6 +350,7 @@ export default async function TodayPage() {
   const today = new Date()
   const dateStr = today.toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    timeZone: 'America/New_York',
   })
 
   let cards = []
