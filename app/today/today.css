@@ -288,7 +288,10 @@
   font-size: 22px;
   color: var(--text);
   font-weight: 400;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
+
 .tdl-food-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .tdl-food-badge {
   font-family: var(--mono);
@@ -367,8 +370,7 @@
   display: flex; justify-content: space-between; align-items: center;
   flex-wrap: wrap; gap: 0.75rem;
 }
-.tdl-protocol-name { font-family: var(--serif); font-size: 21px; color: var(--text); font-weight: 400; }
-.tdl-protocol-badge {
+.tdl-protocol-name { font-family: var(--serif); font-size: 21px; color: var(--text); font-weight: 400; word-break: break-word; overflow-wrap: break-word; }.tdl-protocol-badge {
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); background: rgba(58,122,58,0.1); border: 0.5px solid rgba(58,122,58,0.25); padding: 4px 10px; border-radius: 3px;
 }
 .tdl-protocol-source {
