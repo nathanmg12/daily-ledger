@@ -26,13 +26,24 @@ async function markCardsSeen(supabase, userId, cards) {
     .upsert(rows, { onConflict: 'user_id,card_id', ignoreDuplicates: true })
 }
 async function getTodayFeed(supabase, userId) {
-  const today = new Date().toISOString().split('T')[0]
+  // Get the most recent feed date for this user
+  const { data: latestFeed, error: latestError } = await supabase
+    .from('daily_feed')
+    .select('date')
+    .eq('user_id', userId)
+    .order('date', { ascending: false })
+    .limit(1)
 
+  if (latestError || !latestFeed?.length) return []
+
+  const latestDate = latestFeed[0].date
+
+  // Fetch all cards for that date
   const { data, error } = await supabase
     .from('daily_feed')
     .select('card_id, cards(id, type, title, content, card_interests(interests(name)))')
     .eq('user_id', userId)
-    .eq('date', today)
+    .eq('date', latestDate)
 
   if (error) throw new Error(error.message)
 
@@ -42,7 +53,6 @@ async function getTodayFeed(supabase, userId) {
     return { ...row.cards, interests }
   }).filter(Boolean)
 }
-
 function groupCardsByType(cards) {
   return cards.reduce((acc, card) => {
     if (!acc[card.type]) acc[card.type] = []
