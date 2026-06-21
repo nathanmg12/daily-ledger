@@ -156,6 +156,9 @@
   color: var(--text-muted);
   font-family: var(--mono);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
 .tdl-qf-grid { display: grid; gap: 0.625rem; }
