@@ -1,9 +1,7 @@
 name: Select Daily Feed
 
 on:
-  schedule:
-    - cron: '0 9 * * *'  # 9am UTC = 4am ET (5am during EDT)
-  workflow_dispatch:       # allows manual trigger from GitHub UI
+  workflow_dispatch:       # manual trigger only — schedule handled by cron-job.org
 
 jobs:
   select-feed:
