@@ -1,7 +1,0 @@
-{
-  "zone_id": "6a36da2b39d8c8d3bc18eb7e",
-  "type": "TXT",
-  "hostname": "resend._domainkey.thedailyledger.app",
-  "value": "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQClPTJ0TvFLxPm8vl/uKVv2UgmaMynKGegJIQ/rC6OJxUXnG6ABxWPw11fSWPuvnuhn8bPJ/HFYkZXNBS2w5zchWBysP3CZgC5Vkj33NxI+s6u4NT4MnqJLaPEUvW7Rrv7CGbp6lAy9kfeilhOJZhjNo/Bt94L/0xLGdP1jQW20eQIDAQAB",
-  "ttl": 3600
-}
