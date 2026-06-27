@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
-  const [mode, setMode] = useState('signin') // 'signin' or 'signup'
+  const [mode, setMode] = useState('signin') // 'signin', 'signup', 'forgot'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
@@ -39,6 +39,15 @@ export default function LoginPage() {
       } else {
         setMessage('Check your email for a confirmation link.')
       }
+    } else if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        setMessage('Check your email for a password reset link.')
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
@@ -68,7 +77,7 @@ export default function LoginPage() {
         The Daily <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Ledger</em>
       </h1>
       <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-        {mode === 'signin' ? 'Sign in to your account' : 'Create an account'}
+        {mode === 'signin' ? 'Sign in to your account' : mode === 'signup' ? 'Create an account' : 'Reset your password'}
       </p>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -80,15 +89,30 @@ export default function LoginPage() {
           required
           style={inputStyle}
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          style={inputStyle}
-        />
+
+        {mode !== 'forgot' && (
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            style={inputStyle}
+          />
+        )}
+
+        {mode === 'signin' && (
+          <div style={{ textAlign: 'right', marginTop: -4 }}>
+            <button
+              type="button"
+              onClick={() => { setMode('forgot'); setError(''); setMessage('') }}
+              style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--sans)' }}
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
 
         {mode === 'signup' && (
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
@@ -125,7 +149,7 @@ export default function LoginPage() {
             marginTop: 4,
           }}
         >
-          {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+          {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Send Reset Link'}
         </button>
       </form>
 
@@ -145,7 +169,7 @@ export default function LoginPage() {
           <>
             Don&apos;t have an account?{' '}
             <button
-              onClick={() => setMode('signup')}
+              onClick={() => { setMode('signup'); setError(''); setMessage('') }}
               style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: 13, fontFamily: 'var(--sans)' }}
             >
               Sign up
@@ -153,12 +177,11 @@ export default function LoginPage() {
           </>
         ) : (
           <>
-            Already have an account?{' '}
             <button
-              onClick={() => setMode('signin')}
+              onClick={() => { setMode('signin'); setError(''); setMessage('') }}
               style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: 13, fontFamily: 'var(--sans)' }}
             >
-              Sign in
+              Back to sign in
             </button>
           </>
         )}
