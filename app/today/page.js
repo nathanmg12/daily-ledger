@@ -2,6 +2,7 @@ import './today.css'
 import { createClient } from '@/lib/supabase/server'
 import Nav from '@/components/Nav'
 import FadeIn from '@/components/FadeIn'
+import SaveShareButtons from '@/components/SaveShareButtons'
 
 async function getUserTopicCount(supabase, userId) {
   const { data, error } = await supabase
@@ -12,21 +13,20 @@ async function getUserTopicCount(supabase, userId) {
   if (error) return 0
   return data.length
 }
+
 async function markCardsSeen(supabase, userId, cards) {
   if (!cards.length) return
-
   const rows = cards.map((card) => ({
     user_id: userId,
     card_id: card.id,
     seen_at: new Date().toISOString(),
   }))
-
   await supabase
     .from('user_card_history')
     .upsert(rows, { onConflict: 'user_id,card_id', ignoreDuplicates: true })
 }
+
 async function getTodayFeed(supabase, userId) {
-  // Get the most recent feed date for this user
   const { data: latestFeed, error: latestError } = await supabase
     .from('daily_feed')
     .select('date')
@@ -38,7 +38,6 @@ async function getTodayFeed(supabase, userId) {
 
   const latestDate = latestFeed[0].date
 
-  // Fetch all cards for that date
   const { data, error } = await supabase
     .from('daily_feed')
     .select('card_id, cards(id, type, title, content, card_interests(interests(name)))')
@@ -53,6 +52,7 @@ async function getTodayFeed(supabase, userId) {
     return { ...row.cards, interests }
   }).filter(Boolean)
 }
+
 function groupCardsByType(cards) {
   return cards.reduce((acc, card) => {
     if (!acc[card.type]) acc[card.type] = []
@@ -98,7 +98,7 @@ function getInterestColor(interests) {
 function InterestTags({ interests }) {
   if (!interests?.length) return null
   return (
-    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem', paddingRight: '72px' }}>
       {interests.map((name) => {
         const c = INTEREST_COLORS[name] || DEFAULT_COLOR
         return (
@@ -138,11 +138,12 @@ function searchUrl(prompt) {
   return `https://www.google.com/search?q=${encodeURIComponent(prompt)}`
 }
 
-function ScriptureCard({ card }) {
+function ScriptureCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-verse-block" style={{ borderLeftColor: color.color }}>
+    <div className="tdl-verse-block" style={{ borderLeftColor: color.color, position: 'relative' }}>
+      <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
       <InterestTags interests={card.interests} />
       <div className="tdl-verse-eyebrow" style={{ color: color.color }}>Scripture</div>
       <p className="tdl-verse-text">&ldquo;{c.verse}&rdquo;</p>
@@ -152,11 +153,12 @@ function ScriptureCard({ card }) {
   )
 }
 
-function QuoteCard({ card }) {
+function QuoteCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-quote-block" style={{ borderLeftColor: color.color }}>
+    <div className="tdl-quote-block" style={{ borderLeftColor: color.color, position: 'relative' }}>
+      <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
       <InterestTags interests={card.interests} />
       <div className="tdl-quote-eyebrow" style={{ color: color.color }}>Quote</div>
       <p className="tdl-quote-text">&ldquo;{c.quote}&rdquo;</p>
@@ -168,11 +170,12 @@ function QuoteCard({ card }) {
   )
 }
 
-function QuickFactCard({ card }) {
+function QuickFactCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-qf-card" style={{ borderLeftColor: color.color }}>
+    <div className="tdl-qf-card" style={{ borderLeftColor: color.color, position: 'relative' }}>
+      <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
       <InterestTags interests={card.interests} />
       <div className="tdl-qf-eyebrow" style={{ color: color.color }}>Quick Fact</div>
       <p className="tdl-qf-fact">{c.fact}</p>
@@ -185,12 +188,13 @@ function QuickFactCard({ card }) {
   )
 }
 
-function BookSummaryCard({ card }) {
+function BookSummaryCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-book-card" style={{ borderLeft: `3px solid ${color.color}` }}>
+    <div className="tdl-book-card" style={{ borderLeft: `3px solid ${color.color}`, position: 'relative' }}>
       <div style={{ padding: '0.75rem 1.5rem 0' }}>
+        <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
         <InterestTags interests={card.interests} />
       </div>
       <div className="tdl-book-header">
@@ -221,12 +225,13 @@ function BookSummaryCard({ card }) {
   )
 }
 
-function FoodSpotlightCard({ card }) {
+function FoodSpotlightCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-food-card" style={{ borderLeft: `3px solid ${color.color}` }}>
+    <div className="tdl-food-card" style={{ borderLeft: `3px solid ${color.color}`, position: 'relative' }}>
       <div style={{ padding: '0.75rem 1.5rem 0' }}>
+        <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
         <InterestTags interests={card.interests} />
       </div>
       <div className="tdl-food-header">
@@ -272,11 +277,12 @@ function FoodSpotlightCard({ card }) {
   )
 }
 
-function ResearchCard({ card }) {
+function ResearchCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-research-card" style={{ borderLeft: `3px solid ${color.color}` }}>
+    <div className="tdl-research-card" style={{ borderLeft: `3px solid ${color.color}`, position: 'relative' }}>
+      <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
       <InterestTags interests={card.interests} />
       <div className="tdl-research-journal" style={{ color: color.color }}>
         {c.journal}{c.published_at ? ` · Published ${c.published_at}` : ''}
@@ -290,12 +296,13 @@ function ResearchCard({ card }) {
   )
 }
 
-function ProtocolCard({ card }) {
+function ProtocolCard({ card, savedCardIds, userId }) {
   const c = card.content
   const color = getInterestColor(card.interests)
   return (
-    <div className="tdl-protocol-card" style={{ borderLeft: `3px solid ${color.color}` }}>
+    <div className="tdl-protocol-card" style={{ borderLeft: `3px solid ${color.color}`, position: 'relative' }}>
       <div style={{ padding: '0.75rem 1.5rem 0' }}>
+        <SaveShareButtons card={card} savedCardIds={savedCardIds} userId={userId} />
         <InterestTags interests={card.interests} />
       </div>
       <div className="tdl-protocol-header">
@@ -355,23 +362,29 @@ export default async function TodayPage() {
 
   let cards = []
   let topicCount = 0
+  let savedCardIds = new Set()
   try {
-    [cards, topicCount] = await Promise.all([
+    const [feedCards, count, savedData] = await Promise.all([
       getTodayFeed(supabase, user.id),
       getUserTopicCount(supabase, user.id),
+      supabase.from('user_saved_cards').select('card_id').eq('user_id', user.id),
     ])
+    cards = feedCards
+    topicCount = count
+    savedCardIds = new Set(savedData.data?.map(r => r.card_id) || [])
     await markCardsSeen(supabase, user.id, cards)
   } catch (e) {
     console.error('Feed error:', e.message)
   }
 
   const grouped = groupCardsByType(cards)
+  const presentCardTypes = Object.keys(grouped)
   const totalCards = cards.length
   const minRead = Math.max(3, Math.round(totalCards * 1.2))
 
   return (
     <>
-      <Nav />
+      <Nav presentCardTypes={presentCardTypes} />
       <div className="tdl-page">
 
         {/* Hero */}
@@ -408,28 +421,32 @@ export default async function TodayPage() {
         {totalCards === 0 ? <EmptyState /> : (
           <>
             {/* Scripture */}
-            {grouped.scripture?.map((card) => (
-              <FadeIn key={card.id} delay={0}>
-                <ScriptureCard card={card} />
-              </FadeIn>
-            ))}
+            <div id="section-scripture">
+              {grouped.scripture?.map((card) => (
+                <FadeIn key={card.id} delay={0}>
+                  <ScriptureCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                </FadeIn>
+              ))}
+            </div>
 
             {/* Quote */}
-            {grouped.quote?.map((card) => (
-              <FadeIn key={card.id} delay={100}>
-                <QuoteCard card={card} />
-              </FadeIn>
-            ))}
+            <div id="section-quote">
+              {grouped.quote?.map((card) => (
+                <FadeIn key={card.id} delay={100}>
+                  <QuoteCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                </FadeIn>
+              ))}
+            </div>
 
             {/* Quick Facts */}
             {grouped.quick_facts?.length > 0 && (
               <FadeIn delay={150}>
-                <div className="tdl-section">
+                <div id="section-quick_facts" className="tdl-section">
                   <SectionHeader tag="quick_facts" label="Quick Facts" count={`${grouped.quick_facts.length} facts`} />
                   <div className="tdl-qf-grid">
                     {grouped.quick_facts.map((card, i) => (
                       <FadeIn key={card.id} delay={i * 60}>
-                        <QuickFactCard card={card} />
+                        <QuickFactCard card={card} savedCardIds={savedCardIds} userId={user.id} />
                       </FadeIn>
                     ))}
                   </div>
@@ -440,11 +457,11 @@ export default async function TodayPage() {
             {/* Books */}
             {grouped.book_summary?.length > 0 && (
               <FadeIn delay={100}>
-                <div className="tdl-section">
+                <div id="section-book_summary" className="tdl-section">
                   <SectionHeader tag="book_summary" label="Book Ideas" count={`${grouped.book_summary.length} book${grouped.book_summary.length !== 1 ? 's' : ''}`} />
                   {grouped.book_summary.map((card, i) => (
                     <FadeIn key={card.id} delay={i * 80}>
-                      <BookSummaryCard card={card} />
+                      <BookSummaryCard card={card} savedCardIds={savedCardIds} userId={user.id} />
                     </FadeIn>
                   ))}
                 </div>
@@ -454,11 +471,11 @@ export default async function TodayPage() {
             {/* Food Spotlight */}
             {grouped.food_spotlight?.length > 0 && (
               <FadeIn delay={100}>
-                <div className="tdl-section">
+                <div id="section-food_spotlight" className="tdl-section">
                   <SectionHeader tag="food_spotlight" label="Food Spotlight" count={`Today: ${grouped.food_spotlight[0].content.name}`} />
                   {grouped.food_spotlight.map((card) => (
                     <FadeIn key={card.id}>
-                      <FoodSpotlightCard card={card} />
+                      <FoodSpotlightCard card={card} savedCardIds={savedCardIds} userId={user.id} />
                     </FadeIn>
                   ))}
                 </div>
@@ -468,11 +485,11 @@ export default async function TodayPage() {
             {/* Research */}
             {grouped.research?.length > 0 && (
               <FadeIn delay={100}>
-                <div className="tdl-section">
+                <div id="section-research" className="tdl-section">
                   <SectionHeader tag="research" label="Research Spotlight" count={`${grouped.research.length} paper${grouped.research.length !== 1 ? 's' : ''}`} />
                   {grouped.research.map((card, i) => (
                     <FadeIn key={card.id} delay={i * 80}>
-                      <ResearchCard card={card} />
+                      <ResearchCard card={card} savedCardIds={savedCardIds} userId={user.id} />
                     </FadeIn>
                   ))}
                 </div>
@@ -482,11 +499,11 @@ export default async function TodayPage() {
             {/* Protocol */}
             {grouped.protocol?.length > 0 && (
               <FadeIn delay={100}>
-                <div className="tdl-section">
+                <div id="section-protocol" className="tdl-section">
                   <SectionHeader tag="protocol" label="Protocol Spotlight" count={`Today: ${grouped.protocol[0].content.name}`} />
                   {grouped.protocol.map((card) => (
                     <FadeIn key={card.id}>
-                      <ProtocolCard card={card} />
+                      <ProtocolCard card={card} savedCardIds={savedCardIds} userId={user.id} />
                     </FadeIn>
                   ))}
                 </div>

@@ -2,8 +2,12 @@
   box-sizing: border-box;
 }
 
-html, body {
+html {
   overflow-x: hidden;
+}
+
+body {
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -60,4 +64,8 @@ body {
   font-family: var(--sans);
   font-weight: 300;
   line-height: 1.7;
+}
+
+@keyframes tdl-spin {
+  to { transform: rotate(360deg); }
 }

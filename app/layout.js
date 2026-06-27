@@ -1,4 +1,5 @@
 import "./globals.css";
+import ShareTemplateWrapper from "@/components/ShareTemplateWrapper";
 
 export const metadata = {
   title: "The Daily Ledger",
@@ -36,7 +37,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.png?v=2" type="image/png" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -44,7 +45,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ShareTemplateWrapper />
+        {children}
+      </body>
     </html>
   );
 }
