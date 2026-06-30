@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Nav from '@/components/Nav'
+import PushNotificationToggle from '@/components/PushNotificationToggle'
 
 const MIN_INTERESTS = 3
 
@@ -213,6 +214,21 @@ export default function SettingsPage() {
           >
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
+        </div>
+
+        {/* Notifications */}
+        <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '0.5px solid var(--border-med)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+            <span style={{
+              fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
+              padding: '4px 10px', borderRadius: 3, background: 'var(--accent-dim)', color: 'var(--accent)',
+              border: '0.5px solid rgba(181,130,58,0.2)', whiteSpace: 'nowrap'
+            }}>
+              Notifications
+            </span>
+            <div style={{ flex: 1, height: '0.5px', background: 'var(--border-med)' }} />
+          </div>
+          <PushNotificationToggle />
         </div>
 
         {/* Sign Out */}

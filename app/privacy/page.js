@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           What we collect
         </h2>
         <p style={{ marginBottom: '1.5rem' }}>
-          When you create an account, we collect your email address and a securely hashed password (we never see or store your password in plain text). When you select topics to follow, we store those preferences. As you use the app, we track which cards you've already seen so we don't show you the same content twice. If you save cards to your library, we store those saves so your library persists across sessions.
+          When you create an account, we collect your email address and a securely hashed password (we never see or store your password in plain text). When you select topics to follow, we store those preferences. As you use the app, we track which cards you've already seen so we don't show you the same content twice. If you save cards to your library, we store those saves so your library persists across sessions. If you enable push notifications, we store a unique browser-generated subscription token used solely to deliver your daily notification.
         </p>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--text)', marginTop: '2rem', marginBottom: '0.75rem' }}>
           How we use it
@@ -34,6 +34,12 @@ export default function PrivacyPage() {
           The app includes an optional feature to generate a shareable image of a card. This image is created locally on your device and is only shared if you choose to share it. We do not upload, store, or have access to any images you generate or share.
         </p>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--text)', marginTop: '2rem', marginBottom: '0.75rem' }}>
+          Push notifications
+        </h2>
+        <p style={{ marginBottom: '1.5rem' }}>
+          If you choose to enable push notifications, your browser generates a unique subscription token that is stored securely in our database. This token is used solely to deliver one daily notification when your feed is ready. We will never send more than one notification per day. You can disable notifications at any time from your settings page, which immediately removes your token from our system.
+        </p>
+        <h2 style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--text)', marginTop: '2rem', marginBottom: '0.75rem' }}>
           Where it's stored
         </h2>
         <p style={{ marginBottom: '1.5rem' }}>
@@ -43,7 +49,7 @@ export default function PrivacyPage() {
           Your control over your data
         </h2>
         <p style={{ marginBottom: '1.5rem' }}>
-          You can update your topic preferences at any time from your settings page. You can remove any card from your library at any time. If you'd like your account and associated data deleted entirely, contact us and we'll handle it promptly.
+          You can update your topic preferences at any time from your settings page. You can remove any card from your library at any time. You can disable push notifications at any time from your settings page. If you'd like your account and associated data deleted entirely, contact us and we'll handle it promptly.
         </p>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: 20, color: 'var(--text)', marginTop: '2rem', marginBottom: '0.75rem' }}>
           Changes to this policy
