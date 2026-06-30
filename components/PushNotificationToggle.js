@@ -14,8 +14,8 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray
 }
 
-export default function PushNotificationToggle() {
-  const [status, setStatus] = useState('loading') // loading, unsupported, denied, enabled, disabled
+export default function PushNotificationToggle({ onEnabled }) {
+  const [status, setStatus] = useState('loading')
   const supabase = createClient()
 
   useEffect(() => {
@@ -27,7 +27,6 @@ export default function PushNotificationToggle() {
       setStatus('denied')
       return
     }
-    // Check if they already have a subscription saved
     navigator.serviceWorker.ready.then(reg => {
       reg.pushManager.getSubscription().then(sub => {
         setStatus(sub ? 'enabled' : 'disabled')
@@ -52,6 +51,7 @@ export default function PushNotificationToggle() {
       body: JSON.stringify(sub)
     })
     setStatus('enabled')
+    if (onEnabled) onEnabled()
   }
 
   async function disable() {
