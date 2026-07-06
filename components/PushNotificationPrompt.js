@@ -9,39 +9,50 @@ export default function PushNotificationPrompt() {
   useEffect(() => {
     if (!('PushManager' in window)) return
     if (Notification.permission !== 'default') return
-    // Only show if they haven't dismissed it before
     const dismissed = localStorage.getItem('tdl-push-prompt-dismissed')
     if (!dismissed) setShow(true)
   }, [])
 
   if (!show) return null
 
+  function dismiss() {
+    localStorage.setItem('tdl-push-prompt-dismissed', 'true')
+    setShow(false)
+  }
+
   return (
     <div style={{
+      position: 'relative',
       background: 'var(--surface)',
       border: '0.5px solid var(--border-med)',
-      borderRadius: 12,
-      padding: '1.25rem 1.5rem',
+      borderRadius: 10,
+      padding: '1rem 1.25rem',
       marginBottom: '1.5rem',
     }}>
-      <p style={{ fontSize: 14, color: 'var(--text)', fontFamily: 'var(--sans)', marginBottom: 4 }}>
-        Get a daily nudge
+      <button
+        onClick={dismiss}
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 12,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: 16,
+          color: 'var(--text-muted)',
+          lineHeight: 1,
+          padding: 0,
+        }}
+      >
+        ×
+      </button>
+      <p style={{ fontSize: 11, fontFamily: 'var(--mono)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+        Notifications
       </p>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: 'var(--sans)', marginBottom: '1rem', lineHeight: 1.6 }}>
-        One notification a day when your Ledger is ready. Nothing more.
-      </p>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <PushNotificationToggle />
-        <button
-          onClick={() => {
-            localStorage.setItem('tdl-push-prompt-dismissed', 'true')
-            setShow(false)
-          }}
-          style={{ fontSize: 12, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}
-        >
-          No thanks
-        </button>
-      </div>
+      <PushNotificationToggle onEnabled={() => {
+        localStorage.setItem('tdl-push-prompt-dismissed', 'true')
+        setShow(false)
+      }} />
     </div>
   )
 }
