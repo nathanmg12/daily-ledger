@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 
 export default function AddToHomeScreenPrompt() {
   const [show, setShow] = useState(false)
-  const [platform, setPlatform] = useState(null) // 'ios' | 'android'
+  const [platform, setPlatform] = useState(null) // 'android' | 'other'
   const [deferredPrompt, setDeferredPrompt] = useState(null)
 
   useEffect(() => {
@@ -16,19 +16,13 @@ export default function AddToHomeScreenPrompt() {
     const dismissed = localStorage.getItem('tdl-a2hs-prompt-dismissed')
     if (dismissed) return
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
-
-    if (isIOS) {
-      setPlatform('ios')
-      setShow(true)
-      return
-    }
+    setPlatform('other')
+    setShow(true)
 
     function handleBeforeInstallPrompt(e) {
       e.preventDefault()
       setDeferredPrompt(e)
       setPlatform('android')
-      setShow(true)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -84,7 +78,7 @@ export default function AddToHomeScreenPrompt() {
         color: 'var(--text-muted)',
         marginBottom: '0.75rem',
       }}>
-        Add to Home Screen
+        Add app to home screen
       </p>
 
       {platform === 'android' ? (
@@ -103,20 +97,17 @@ export default function AddToHomeScreenPrompt() {
             color: 'white',
           }}
         >
-          Add to Home Screen
+          Add app to home screen
         </button>
       ) : (
-        <ol style={{
+        <p style={{
           margin: 0,
-          paddingLeft: 18,
           fontSize: 13,
           lineHeight: 1.7,
           color: 'var(--text-secondary)',
         }}>
-          <li>Tap the Share icon in Safari&rsquo;s toolbar</li>
-          <li>Scroll down and tap &ldquo;Add to Home Screen&rdquo;</li>
-          <li>Tap &ldquo;Add&rdquo; in the top right</li>
-        </ol>
+          Open the browser menu and look for &ldquo;Add to Home Screen&rdquo; to install the app.
+        </p>
       )}
     </div>
   )
