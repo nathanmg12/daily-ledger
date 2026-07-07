@@ -4,6 +4,7 @@ import Nav from '@/components/Nav'
 import FadeIn from '@/components/FadeIn'
 import SaveShareButtons from '@/components/SaveShareButtons'
 import PushNotificationPrompt from '@/components/PushNotificationPrompt'
+import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt'
 
 async function getUserTopicCount(supabase, userId) {
   const { data, error } = await supabase
@@ -419,8 +420,11 @@ export default async function TodayPage() {
           )}
         </div>
 
-        {/* Push notification prompt — shows once for new users */}
-        <PushNotificationPrompt />
+        {/* Add to home screen prompt — shows once for new users */}
+<AddToHomeScreenPrompt />
+
+{/* Push notification prompt — shows once for new users */}
+<PushNotificationPrompt />
 
         {totalCards === 0 ? <EmptyState /> : (
           <>
