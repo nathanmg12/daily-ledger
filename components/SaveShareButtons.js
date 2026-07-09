@@ -4,11 +4,27 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import domtoimage from 'dom-to-image-more'
 
+// Canvas dimensions per style. Stack/Poster stay square; Story is 9:16.
+// scale:2 doubles these for the actual PNG output (e.g. 540x960 -> 1080x1920).
+const STYLE_DIMENSIONS = {
+  stack:  { width: 540, height: 540 },
+  poster: { width: 540, height: 540 },
+  story:  { width: 540, height: 960 },
+}
+
+// Background color each style's canvas/card renders against, so the
+// overflow fade gradient blends into the right color instead of Stack's
+// card color being reused everywhere.
+const STYLE_FADE_BG = {
+  stack:  '250,249,247', // card surface color
+  poster: '240,237,232', // canvas color (poster has no separate card box)
+  story:  '240,237,232', // canvas color
+}
+
 // Mini thumbnail previews for the style picker
 function StackThumb() {
   return (
     <div style={{ width: '100%', aspectRatio: '1', background: '#f0ede8', position: 'relative', overflow: 'hidden' }}>
-      {/* Back cards */}
       <div style={{
         position: 'absolute', width: 90, height: 70,
         background: '#faf9f7', borderRadius: 4, borderLeft: '2px solid #2e6da4',
@@ -23,7 +39,6 @@ function StackThumb() {
         transform: 'translate(-50%, -50%) rotate(-2.5deg) translate(-5px, 2px)',
         opacity: 0.65, boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
       }} />
-      {/* Front card */}
       <div style={{
         position: 'absolute', width: 90, height: 70,
         background: '#faf9f7', borderRadius: 4, borderLeft: '3px solid #b5823a',
@@ -37,7 +52,6 @@ function StackThumb() {
         <div style={{ width: '85%', height: 3, background: 'rgba(28,24,20,0.1)', borderRadius: 2, marginBottom: 3 }} />
         <div style={{ width: '95%', height: 3, background: 'rgba(28,24,20,0.1)', borderRadius: 2 }} />
       </div>
-      {/* Footer rule */}
       <div style={{ position: 'absolute', bottom: 14, left: 8, right: 8 }}>
         <div style={{ height: 0.5, background: 'rgba(181,130,58,0.4)', marginBottom: 5 }} />
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -70,6 +84,18 @@ function PosterThumb() {
   )
 }
 
+function StoryThumb() {
+  return (
+    <div style={{ width: '100%', aspectRatio: '9/16', background: '#f0ede8', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '10px 8px' }}>
+      <div style={{ width: '70%', height: 2, background: 'rgba(181,130,58,0.4)', borderRadius: 2, marginBottom: 6 }} />
+      <div style={{ width: '85%', height: 3, background: 'rgba(28,24,20,0.12)', borderRadius: 2, marginBottom: 4 }} />
+      <div style={{ width: '75%', height: 3, background: 'rgba(28,24,20,0.12)', borderRadius: 2, marginBottom: 4 }} />
+      <div style={{ width: '80%', height: 3, background: 'rgba(28,24,20,0.12)', borderRadius: 2 }} />
+      <div style={{ position: 'absolute', bottom: 10, width: '30%', height: 2, background: 'rgba(154,144,136,0.3)', borderRadius: 2 }} />
+    </div>
+  )
+}
+
 export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave }) {
   const [saved, setSaved] = useState(savedCardIds?.has(card.id) ?? false)
   const [saving, setSaving] = useState(false)
@@ -77,6 +103,7 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
   const [confirmingUnsave, setConfirmingUnsave] = useState(false)
   const [showStylePicker, setShowStylePicker] = useState(false)
   const [selectedStyle, setSelectedStyle] = useState('stack')
+  const [linkState, setLinkState] = useState('idle') // idle | copying | copied | error
   const supabase = createClient()
 
   async function handleSaveToggle(e) {
@@ -130,26 +157,39 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
 
       container.style.visibility = 'visible'
 
-      // Overflow fade — only for stack style
+      // Overflow fade — applies to any style (stack, poster, story).
+      // Previously hard-gated to 'stack' only, which is why Poster's
+      // longer cards used to get hard-clipped with no fade at all.
       const cardEl = container.querySelector('[data-share-card]')
       const innerEl = container.querySelector('[data-share-inner]')
       let fadeEl = null
-      if (style === 'stack' && cardEl && innerEl && innerEl.scrollHeight > cardEl.clientHeight) {
+      if (cardEl && innerEl && innerEl.scrollHeight > cardEl.clientHeight) {
+        const fadeRgb = STYLE_FADE_BG[style] || STYLE_FADE_BG.stack
         fadeEl = document.createElement('div')
         fadeEl.style.cssText = [
           'position:absolute', 'bottom:0', 'left:0', 'right:0', 'height:80px',
-          'background:linear-gradient(to bottom,rgba(250,249,247,0) 0%,rgba(250,249,247,0.85) 40%,rgba(250,249,247,1) 100%)',
-          'display:flex', 'align-items:flex-end', 'padding:0 22px 14px', 'pointer-events:none',
+          `background:linear-gradient(to bottom, rgba(${fadeRgb},0) 0%, rgba(${fadeRgb},0.85) 40%, rgba(${fadeRgb},1) 100%)`,
+          'display:flex', 'align-items:flex-end', 'justify-content:center',
+          'padding:0 22px 14px', 'pointer-events:none',
         ].join(';')
         fadeEl.innerHTML = '<span style="font-size:20px;color:#9a9088;letter-spacing:0.15em;line-height:1;">···</span>'
+        // Poster/Story's card container may be position:relative already via
+        // flex layout; ensure the fade positions against it correctly.
+        if (getComputedStyle(cardEl).position === 'static') {
+          cardEl.style.position = 'relative'
+        }
         cardEl.appendChild(fadeEl)
       }
 
+      const dims = STYLE_DIMENSIONS[style] || STYLE_DIMENSIONS.stack
+
       const blob = await domtoimage.toBlob(container, {
-        width: 540, height: 540,
+        width: dims.width, height: dims.height,
         style: { transform: 'none' },
         scale: 2,
-        filter: (node) => {
+	skipFonts: true,
+	ignoreCSSRuleErrors: true,
+	filter: (node) => {
           if (node.tagName === 'LINK' && node.href?.includes('fonts.googleapis.com')) return false
           return true
         },
@@ -183,6 +223,29 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
     URL.revokeObjectURL(url)
   }
 
+  async function handleCopyLink(e) {
+    e.stopPropagation()
+    if (linkState === 'copying') return
+    setLinkState('copying')
+    try {
+      const res = await fetch('/api/share-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ card_id: card.id }),
+      })
+      if (!res.ok) throw new Error('Failed to create link')
+      const { slug } = await res.json()
+      const url = `${window.location.origin}/share/${slug}`
+      await navigator.clipboard.writeText(url)
+      setLinkState('copied')
+      setTimeout(() => setLinkState('idle'), 2000)
+    } catch (err) {
+      console.error('Copy link failed:', err)
+      setLinkState('error')
+      setTimeout(() => setLinkState('idle'), 2000)
+    }
+  }
+
   // Unsave confirmation
   if (confirmingUnsave) {
     return (
@@ -213,13 +276,14 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
 
   // Style picker
   if (showStylePicker) {
+    const linkLabel = { idle: 'Copy link ↗', copying: 'Copying…', copied: '✓ Copied', error: 'Failed — try again' }[linkState]
     return (
       <div
         style={{
           position: 'absolute', top: 10, right: 10,
           background: 'var(--surface)', border: '0.5px solid var(--border-med)',
           borderRadius: 12, padding: '12px 12px 10px',
-          zIndex: 20, width: 200,
+          zIndex: 20, width: 220,
           boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
         }}
         onClick={e => e.stopPropagation()}
@@ -258,9 +322,24 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
               Poster
             </div>
           </div>
+
+          {/* Story option */}
+          <div
+            onClick={() => setSelectedStyle('story')}
+            style={{
+              flex: 1, borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
+              border: selectedStyle === 'story' ? '2px solid var(--accent)' : '2px solid var(--border-med)',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <StoryThumb />
+            <div style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: '0.06em', textTransform: 'uppercase', color: selectedStyle === 'story' ? 'var(--accent)' : 'var(--text-muted)', textAlign: 'center', padding: '5px 0 3px', background: 'var(--surface)' }}>
+              Story
+            </div>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
           <button
             onClick={() => setShowStylePicker(false)}
             style={{
@@ -281,9 +360,26 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
               fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase',
             }}
           >
-            Share
+            Share image
           </button>
         </div>
+
+        {/* Copy Link — separate action, doesn't generate a file */}
+        <button
+          onClick={handleCopyLink}
+          disabled={linkState === 'copying'}
+          style={{
+            width: '100%', padding: '7px 0',
+            background: linkState === 'copied' ? 'rgba(58,122,58,0.12)' : 'var(--surface2)',
+            color: linkState === 'copied' ? '#3a7a3a' : 'var(--text-secondary)',
+            border: linkState === 'copied' ? '0.5px solid rgba(58,122,58,0.3)' : '0.5px solid var(--border-med)',
+            borderRadius: 6, cursor: linkState === 'copying' ? 'wait' : 'pointer',
+            fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase',
+            transition: 'all 0.15s',
+          }}
+        >
+          {linkLabel}
+        </button>
       </div>
     )
   }
