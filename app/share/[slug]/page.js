@@ -262,7 +262,7 @@ export default async function SharePage({ params }) {
         </div>
         {!user && (
           <a
-            href="/signup"
+            href="/login"
             style={{
               fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.05em',
               textTransform: 'uppercase', color: 'var(--text-secondary)',
@@ -327,7 +327,7 @@ export default async function SharePage({ params }) {
                 The Daily Ledger is a daily reading app designed for your specific interests. No algorithm, no ads, no opinions.
               </div>
               <a
-                href="/signup"
+                href="/login"
                 style={{
                   display: 'inline-block', background: 'var(--accent)', color: '#fff',
                   fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 500,
