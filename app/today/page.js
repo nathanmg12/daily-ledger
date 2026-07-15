@@ -1,5 +1,6 @@
 import './today.css'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Nav from '@/components/Nav'
 import FadeIn from '@/components/FadeIn'
 import SaveShareButtons from '@/components/SaveShareButtons'
@@ -26,6 +27,59 @@ async function markCardsSeen(supabase, userId, cards) {
   await supabase
     .from('user_card_history')
     .upsert(rows, { onConflict: 'user_id,card_id', ignoreDuplicates: true })
+}
+
+// Engagement tracking.
+//
+// Uses the service-role client rather than the cookie client because
+// user_activity has RLS enabled with no policies — nothing gets in or out
+// except via service role. This is deliberate: activity data should not be
+// forgeable from the browser, including by Nathan.
+//
+// Writes two things:
+//   1. user_activity — append-only, one row per user per day (PK enforces
+//      idempotency, so 12 opens today = 1 row). This is the substrate for
+//      DAU and retention cohorts, and it can be queried retroactively.
+//   2. users.last_seen_at — overwritten each visit, for "who's gone dark".
+//
+// Day is pinned to America/New_York so day boundaries line up with the
+// 4am ET feed cutover. en-CA gives YYYY-MM-DD, which is what date wants.
+async function recordActivity(userId) {
+  const serviceKey = process.env.SUPABASE_SERVICE_KEY
+
+  if (!serviceKey) {
+    console.error('Activity tracking skipped: SUPABASE_SERVICE_KEY is not set')
+    return
+  }
+
+  const admin = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    serviceKey
+  )
+
+  const day = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/New_York',
+  })
+
+  const [activityRes, lastSeenRes] = await Promise.all([
+    admin
+      .from('user_activity')
+      .upsert(
+        { user_id: userId, day },
+        { onConflict: 'user_id,day', ignoreDuplicates: true }
+      ),
+    admin
+      .from('users')
+      .update({ last_seen_at: new Date().toISOString() })
+      .eq('id', userId),
+  ])
+
+  if (activityRes.error) {
+    console.error('Activity insert failed:', activityRes.error.message)
+  }
+  if (lastSeenRes.error) {
+    console.error('last_seen_at update failed:', lastSeenRes.error.message)
+  }
 }
 
 async function getTodayFeed(supabase, userId) {
@@ -361,6 +415,17 @@ export default async function TodayPage() {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     timeZone: 'America/New_York',
   })
+
+  // Record the visit before anything else can fail.
+  // A user who opens the app and hits a feed error still opened the app —
+  // that is engagement data and should be captured either way.
+  if (user) {
+    try {
+      await recordActivity(user.id)
+    } catch (e) {
+      console.error('Activity tracking error:', e.message)
+    }
+  }
 
   let cards = []
   let topicCount = 0
