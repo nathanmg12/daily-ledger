@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDL Card Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0ede8; --surface: #faf9f7; --surface2: #ede9e3;
+  --border: rgba(0,0,0,0.07); --border-med: rgba(0,0,0,0.12);
+  --text: #1c1814; --text-secondary: #4a453e; --text-muted: #9a9088;
+  --accent: #b5823a; --accent-dim: rgba(181,130,58,0.1);
+  --teal: #2a8a6e; --teal-dim: rgba(42,138,110,0.08);
+  --blue: #2e6da4; --blue-dim: rgba(46,109,164,0.08);
+  --purple: #6b52a8; --purple-dim: rgba(107,82,168,0.08);
+  --green: #3a7a3a; --green-dim: rgba(58,122,58,0.08);
+  --amber: #a07030; --amber-dim: rgba(160,112,48,0.08);
+  --gold: #8a6a20; --gold-dim: rgba(138,106,32,0.08);
+  --red: #c0392b; --red-dim: rgba(192,57,43,0.08);
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-weight: 300; line-height: 1.7; min-height: 100vh; }
+
+.topbar { position: sticky; top: 0; z-index: 100; background: rgba(240,237,232,0.97); backdrop-filter: blur(10px); border-bottom: 0.5px solid var(--border-med); padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.topbar-brand { font-family: var(--serif); font-size: 16px; color: var(--accent); }
+.topbar-label { font-family: var(--mono); font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.page { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 6rem; }
+
+.panel { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: 10px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+.panel-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.field-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; display: block; }
+input[type=text], input[type=password], select, textarea {
+  width: 100%; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 6px;
+  padding: 9px 12px; font-family: var(--mono); font-size: 13px; color: var(--text); outline: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; line-height: 1.6; font-size: 12px; }
+
+.btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 18px; border-radius: 6px; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm { padding: 5px 12px; font-size: 10px; }
+.btn-secondary { background: var(--surface2); color: var(--text-secondary); border: 0.5px solid var(--border-med); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--red-dim); color: var(--red); border: 0.5px solid rgba(192,57,43,0.2); }
+.btn-green { background: var(--green-dim); color: var(--green); border: 0.5px solid rgba(58,122,58,0.25); }
+.btn-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+
+.badge { display: inline-flex; align-items: center; justify-content: center; background: var(--accent-dim); color: var(--accent); font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; border: 0.5px solid rgba(181,130,58,0.25); }
+.alert { padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 0.75rem; font-family: var(--mono); }
+.alert-error { background: var(--red-dim); color: var(--red); border: 0.5px solid rgba(192,57,43,0.2); }
+.alert-success { background: var(--green-dim); color: var(--green); border: 0.5px solid rgba(58,122,58,0.2); }
+.alert-warning { background: var(--amber-dim); color: var(--amber); border: 0.5px solid rgba(160,112,48,0.2); }
+
+.interest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.4rem; margin-top: 0.5rem; }
+.i-check { display: flex; align-items: center; gap: 7px; background: var(--bg); border: 0.5px solid var(--border-med); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: var(--text-secondary); transition: all 0.15s; user-select: none; }
+.i-check:hover { border-color: var(--accent); }
+.i-check.on { border-color: var(--accent); background: var(--accent-dim); color: var(--text); }
+.i-check input { accent-color: var(--accent); cursor: pointer; width: 13px; height: 13px; }
+.i-check.warn { border-color: var(--red); background: var(--red-dim); }
+
+.card-wrapper { margin-bottom: 1.25rem; border: 0.5px solid var(--border-med); border-radius: 12px; overflow: hidden; }
+.card-wrapper.rejected { opacity: 0.3; }
+.card-toolbar { background: var(--surface2); border-bottom: 0.5px solid var(--border-med); padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.card-status { font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; margin-right: auto; }
+.s-ok { color: var(--green); }
+.s-dup { color: var(--amber); }
+.s-rejected { color: var(--red); }
+.card-body-area { padding: 1rem; }
+.card-interests-area { background: var(--bg); border-top: 0.5px solid var(--border-med); padding: 0.75rem 1rem; }
+.card-interests-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+.no-interest-warn { font-family: var(--mono); font-size: 11px; color: var(--red); display: none; margin-top: 0.4rem; }
+
+.edit-area { background: var(--bg); border-top: 0.5px solid var(--accent); padding: 1rem; display: none; }
+.edit-area.open { display: block; }
+.edit-field { margin-bottom: 0.75rem; }
+.edit-idea-block { background: var(--surface); border: 0.5px solid var(--border-med); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; }
+
+.progress-bar { height: 3px; background: var(--border-med); border-radius: 99px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+
+/* ===== CARD STYLES ===== */
+.verse-block { background: var(--surface); border-radius: 8px; padding: 1.25rem 1.5rem; border-left: 3px solid var(--gold); }
+.verse-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; }
+.verse-text { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--text); line-height: 1.55; margin-bottom: 0.5rem; }
+.verse-ref { font-size: 12px; color: var(--gold); font-family: var(--mono); margin-bottom: 0.6rem; }
+.verse-context { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+.quote-block { background: var(--surface); border-radius: 8px; padding: 1.25rem 1.5rem; border-left: 3px solid var(--accent); }
+.quote-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem; }
+.quote-text { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--text); line-height: 1.55; margin-bottom: 0.5rem; }
+.quote-attr { font-size: 12px; color: var(--accent); font-family: var(--mono); margin-bottom: 0.6rem; }
+.quote-context { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+.qf-card { background: var(--surface); border-radius: 8px; padding: 1.25rem 1.5rem; border-left: 3px solid var(--teal); }
+.qf-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.6rem; }
+.qf-fact { font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.875rem; }
+.qf-search { font-size: 12px; color: var(--teal); font-family: var(--mono); }
+.qf-search::before { content: '↳ '; }
+
+.book-card { background: var(--surface); border-radius: 8px; overflow: hidden; }
+.book-hdr { display: flex; gap: 1rem; padding: 1rem 1.25rem; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
+.book-spine { width: 46px; min-width: 46px; height: 62px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 18px; background: var(--purple-dim); border: 0.5px solid rgba(107,82,168,0.2); }
+.book-ttl { font-family: var(--serif); font-size: 17px; font-weight: 400; color: var(--text); margin-bottom: 2px; line-height: 1.3; }
+.book-auth { font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+.book-ideas { padding: 1rem 1.25rem; }
+.ideas-lbl { font-size: 10px; font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.875rem; }
+.idea { padding: 0.75rem 0; border-bottom: 0.5px solid var(--border); }
+.idea:last-of-type { border-bottom: none; padding-bottom: 0; }
+.idea-n { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+.idea-t { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 0.3rem; }
+.idea-b { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+.book-ftr { padding: 0.75rem 1.25rem; border-top: 0.5px solid var(--border); background: var(--surface2); font-size: 12px; color: var(--purple); font-family: var(--mono); }
+.book-ftr::before { content: '↗ '; }
+
+.food-card { background: var(--surface); border-radius: 8px; overflow: hidden; }
+.food-hdr { background: var(--amber-dim); padding: 1rem 1.25rem; border-bottom: 0.5px solid rgba(160,112,48,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.food-nm { font-family: var(--serif); font-size: 20px; color: var(--text); font-weight: 400; }
+.food-bdgs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.food-bdg { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; background: rgba(138,106,32,0.12); color: var(--gold); border: 0.5px solid rgba(138,106,32,0.25); }
+.food-bd { padding: 1rem 1.25rem; }
+.food-intro { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; }
+.food-specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.4rem; margin-bottom: 1rem; }
+.spec { background: var(--surface2); border: 0.5px solid var(--border-med); border-radius: 7px; padding: 0.625rem 0.875rem; }
+.spec-lbl { font-size: 10px; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+.spec-val { font-size: 13px; color: var(--text); font-weight: 500; }
+.food-slbl { font-size: 10px; font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; margin-top: 1rem; }
+.food-txt { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.75rem; }
+.food-vrd { background: var(--amber-dim); border: 0.5px solid rgba(160,112,48,0.2); border-radius: 7px; padding: 0.875rem 1rem; margin-top: 0.875rem; }
+.food-vrd-lbl { font-size: 10px; font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 0.35rem; }
+.food-vrd p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+.proto-card { background: var(--surface); border-radius: 8px; overflow: hidden; }
+.proto-hdr { background: var(--green-dim); padding: 1rem 1.25rem; border-bottom: 0.5px solid rgba(58,122,58,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+.proto-nm { font-family: var(--serif); font-size: 20px; color: var(--text); font-weight: 400; }
+.proto-bdg { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); background: rgba(58,122,58,0.1); border: 0.5px solid rgba(58,122,58,0.25); padding: 3px 8px; border-radius: 3px; }
+.proto-src { font-family: var(--mono); font-size: 10px; color: var(--text-muted); border: 0.5px solid var(--border-med); padding: 3px 8px; border-radius: 3px; }
+.proto-bd { padding: 1rem 1.25rem; }
+.proto-ov { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem; }
+.proto-specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.4rem; margin-bottom: 1rem; }
+.proto-sci { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.875rem; }
+.proto-act { background: var(--green-dim); border: 0.5px solid rgba(58,122,58,0.2); border-radius: 7px; padding: 0.875rem 1rem; }
+.proto-act-lbl { font-size: 10px; font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 0.35rem; }
+.proto-act p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+
+.res-card { background: var(--surface); border-radius: 8px; padding: 1.25rem 1.5rem; }
+.res-jrnl { font-family: var(--mono); font-size: 11px; color: var(--blue); margin-bottom: 0.4rem; }
+.res-ttl { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 0.625rem; line-height: 1.4; }
+.res-tldr-lbl { display: inline-block; font-size: 10px; font-family: var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--blue); margin-bottom: 0.3rem; }
+.res-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.75rem; }
+.res-why { font-size: 13px; color: var(--text-muted); border-left: 2px solid var(--border-med); padding-left: 0.75rem; font-style: italic; }
+
+@media (max-width: 600px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .interest-grid { grid-template-columns: 1fr 1fr; }
+  .page { padding: 1.25rem 1rem 5rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-brand">The Daily <em style="font-style:italic">Ledger</em></span>
+  <span class="topbar-label">Card Builder</span>
+</div>
+
+<div class="page">
+
+  <!-- Batch navigation (manifest mode only) -->
+  <div class="panel" id="batch-nav" style="display:none;border-color:var(--accent);">
+    <div class="panel-title">Batch Progress</div>
+    <div id="batch-progress" style="font-size:14px;color:var(--text);margin-bottom:0.75rem;"></div>
+    <div class="btn-row" style="margin-top:0;">
+      <button class="btn btn-secondary btn-sm" onclick="loadBatch(currentBatchIndex - 1)">← Previous</button>
+      <button class="btn btn-secondary btn-sm" onclick="loadBatch(currentBatchIndex + 1)">Skip to Next →</button>
+    </div>
+  </div>
+
+  <!-- Step 1: Credentials -->
+  <div class="panel">
+    <div class="panel-title">Step 1 — Supabase Connection</div>
+    <div class="grid2">
+      <div><label class="field-label">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co"></div>
+      <div><label class="field-label">Anon Key</label><input type="password" id="sb-key" placeholder="eyJ..."></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="testConn()">Test Connection</button></div>
+    <div id="conn-status" style="margin-top:8px;font-family:var(--mono);font-size:11px;"></div>
+  </div>
+
+  <!-- Step 2: Type + Interest -->
+  <div class="panel">
+    <div class="panel-title">Step 2 — Card Type &amp; Interest</div>
+    <div class="grid2">
+      <div>
+        <label class="field-label">Card Type</label>
+        <select id="card-type" onchange="onTypeChange()">
+          <option value="quick_facts">quick_facts</option>
+          <option value="scripture">scripture</option>
+          <option value="quote">quote</option>
+          <option value="book_summary">book_summary</option>
+          <option value="food_spotlight">food_spotlight</option>
+          <option value="protocol">protocol</option>
+          <option value="research">research</option>
+        </select>
+      </div>
+      <div id="primary-interest-wrap">
+        <label class="field-label">Primary Interest (all cards)</label>
+        <select id="primary-interest" onchange="updateConfirmSummary()">
+          <option value="d234c2c2-645b-4066-8f9c-fff3365a8f9a">Business &amp; Entrepreneurship</option>
+          <option value="300ac2b2-7326-470f-ad84-e5fb16e8c808">Fashion &amp; Style</option>
+          <option value="199594b9-ef32-45d7-ab0d-239576c945d6">Fitness &amp; Health</option>
+          <option value="fa4bddbb-0436-4ea9-9fb0-59eb78e30f02">Food &amp; Nutrition</option>
+          <option value="e91c20de-f53a-4ef0-abda-d3855166f138">Home &amp; Design</option>
+          <option value="cc68b139-406a-4846-8e9e-dc8c7f4ee59b">Marketing &amp; Branding</option>
+          <option value="cb7f5369-b5ee-497b-9ea2-b76435b050ea">Outdoors &amp; Nature</option>
+          <option value="45759c78-b498-489e-9457-65bd17553ea7">Personal Finance</option>
+          <option value="7d78ad5a-3376-4536-b230-f46e2758fff6">Philosophy &amp; Stoicism</option>
+          <option value="ae86b0a4-34ad-4db2-ad59-18b581c014dd">Psychology &amp; Behavior</option>
+          <option value="131eaf25-0218-4775-a7ac-58be66c1b138">Quotes &amp; Wisdom</option>
+          <option value="d8506343-459c-434e-9c40-7ac83b3cf80e">Science &amp; Technology</option>
+          <option value="0816e404-bc25-4bec-a5ee-0c857874a79f">Scripture &amp; Faith</option>
+          <option value="fbe6153f-38e9-4ae5-bc54-7181240388b5">Sleep &amp; Recovery</option>
+        </select>
+      </div>
+      <div id="per-card-note" style="display:none;grid-column:1/-1;">
+        <div class="alert alert-warning" style="margin:0;">Each card in this batch gets its own interest selector below the card preview. The first checked interest becomes the primary for that card.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Paste JSON -->
+  <div class="panel">
+    <div class="panel-title">
+      Step 3 — Paste JSON Array
+      <span id="parse-badge" class="badge" style="display:none"></span>
+    </div>
+    <label class="field-label">JSON from Claude.ai</label>
+    <textarea id="json-input" rows="8" placeholder="Paste your JSON array here..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="parseAndCheck()">Parse &amp; Check Duplicates</button>
+      <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+    </div>
+    <div id="parse-error"></div>
+  </div>
+
+  <!-- Step 4: Review -->
+  <div id="review-section" style="display:none">
+    <div class="panel">
+      <div class="panel-title">
+        Step 4 — Review &amp; Tag Cards
+        <span id="review-badge" class="badge"></span>
+      </div>
+      <div id="dup-summary"></div>
+      <div id="cards-container"></div>
+    </div>
+
+    <!-- Batch tag panel for single-interest types -->
+    <div class="panel" id="batch-tag-panel" style="display:none">
+      <div class="panel-title">Step 5 — Tag Additional Interests (applies to all cards)</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:0.5rem;">Check any additional interests. Every card in this batch will be tagged to all selected interests plus the primary.</p>
+      <div class="interest-grid" id="batch-tag-grid"></div>
+    </div>
+
+    <!-- Confirm -->
+    <div class="panel">
+      <div class="panel-title">Confirm &amp; Insert</div>
+      <div id="confirm-summary" style="font-size:14px;color:var(--text-secondary);margin-bottom:1rem;"></div>
+      <div id="pre-insert-error"></div>
+      <div class="btn-row">
+        <button class="btn btn-green" id="confirm-btn" onclick="confirmInsert()">Insert to Supabase</button>
+      </div>
+      <div id="insert-progress" style="display:none;margin-top:0.75rem;">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--text-muted);" id="progress-text"></div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+      <div id="insert-result" style="margin-top:0.75rem;"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const INTERESTS = [
+  { name: "Business & Entrepreneurship", id: "d234c2c2-645b-4066-8f9c-fff3365a8f9a" },
+  { name: "Fashion & Style",             id: "300ac2b2-7326-470f-ad84-e5fb16e8c808" },
+  { name: "Fitness & Health",            id: "199594b9-ef32-45d7-ab0d-239576c945d6" },
+  { name: "Food & Nutrition",            id: "fa4bddbb-0436-4ea9-9fb0-59eb78e30f02" },
+  { name: "Home & Design",               id: "e91c20de-f53a-4ef0-abda-d3855166f138" },
+  { name: "Marketing & Branding",        id: "cc68b139-406a-4846-8e9e-dc8c7f4ee59b" },
+  { name: "Outdoors & Nature",           id: "cb7f5369-b5ee-497b-9ea2-b76435b050ea" },
+  { name: "Personal Finance",            id: "45759c78-b498-489e-9457-65bd17553ea7" },
+  { name: "Philosophy & Stoicism",       id: "7d78ad5a-3376-4536-b230-f46e2758fff6" },
+  { name: "Psychology & Behavior",       id: "ae86b0a4-34ad-4db2-ad59-18b581c014dd" },
+  { name: "Quotes & Wisdom",             id: "131eaf25-0218-4775-a7ac-58be66c1b138" },
+  { name: "Science & Technology",        id: "d8506343-459c-434e-9c40-7ac83b3cf80e" },
+  { name: "Scripture & Faith",           id: "0816e404-bc25-4bec-a5ee-0c857874a79f" },
+  { name: "Sleep & Recovery",            id: "fbe6153f-38e9-4ae5-bc54-7181240388b5" },
+];
+
+// Per-card types: each card gets its own interest selector
+const PER_CARD_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research'];
+
+// Default pre-checked additional interests per type
+const DEFAULT_TAGS = {
+  food_spotlight: ['199594b9-ef32-45d7-ab0d-239576c945d6'], // Fitness & Health
+  protocol:       ['fbe6153f-38e9-4ae5-bc54-7181240388b5'], // Sleep & Recovery
+  book_summary:   [],
+  research:       [],
+};
+
+// Build batch tag grid
+const batchGrid = document.getElementById('batch-tag-grid');
+INTERESTS.forEach(i => {
+  const lbl = document.createElement('label');
+  lbl.className = 'i-check';
+  lbl.innerHTML = `<input type="checkbox" value="${i.id}" onchange="this.closest('.i-check').classList.toggle('on',this.checked);updateConfirmSummary()"> ${i.name}`;
+  batchGrid.appendChild(lbl);
+});
+
+let parsedCards = [];
+let cardStates = [];
+let cardInterests = [];
+let existingTitles = [];
+let connVerified = false;
+let batchQueue = [];
+let currentBatchIndex = -1;
+
+function sbUrl() { return document.getElementById('sb-url').value.trim().replace(/\/$/,''); }
+function sbKey() { return document.getElementById('sb-key').value.trim(); }
+
+async function sbFetch(path, opts={}) {
+  const res = await fetch(`${sbUrl()}${path}`, {
+    ...opts,
+    headers: { 'apikey': sbKey(), 'Authorization': `Bearer ${sbKey()}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation', ...(opts.headers||{}) }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || JSON.stringify(data));
+  return data;
+}
+
+async function testConn() {
+  const el = document.getElementById('conn-status');
+  el.textContent = 'Testing...';
+  try {
+    await sbFetch('/rest/v1/interests?select=name&limit=1');
+    el.innerHTML = '<span style="color:var(--green)">✓ Connected successfully</span>';
+    connVerified = true;
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--red)">✗ ${e.message}</span>`;
+    connVerified = false;
+  }
+}
+
+function isPerCard() { return PER_CARD_TYPES.includes(document.getElementById('card-type').value); }
+
+function onTypeChange() {
+  const perCard = isPerCard();
+  document.getElementById('primary-interest-wrap').style.display = perCard ? 'none' : 'block';
+  document.getElementById('per-card-note').style.display = perCard ? 'block' : 'none';
+  document.getElementById('review-section').style.display = 'none';
+  parsedCards = []; cardStates = []; cardInterests = [];
+}
+
+function getTitleFromCard(card, type) {
+  if (type === 'scripture') return card.reference || '';
+  if (type === 'quote') return `${card.author||''} — ${(card.quote||'').substring(0,40)}`;
+  if (type === 'quick_facts') return (card.fact||'').substring(0,80);
+  if (type === 'book_summary') return card.title || '';
+  if (type === 'food_spotlight') return card.name || '';
+  if (type === 'protocol') return card.name || '';
+  if (type === 'research') return card.title || '';
+  return '';
+}
+
+function normalize(s) { return (s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim(); }
+function isSimilar(a, b) {
+  const na = normalize(a), nb = normalize(b);
+  if (na === nb) return true;
+  const s = na.substring(0,45);
+  return s.length > 10 && (nb.includes(s) || na.includes(nb.substring(0,45)));
+}
+
+// For quick_facts: check duplicates within same interest only
+// For other types: check across all cards of that type
+async function fetchExistingTitles(type) {
+  try {
+    let url = `/rest/v1/cards?select=title&type=eq.${type}&limit=2000`;
+    if (type === 'quick_facts') {
+      const primaryId = document.getElementById('primary-interest').value;
+      url += `&interest_id=eq.${primaryId}`;
+    }
+    const existing = await sbFetch(url);
+    return existing.map(r => r.title || '');
+  } catch(e) { return []; }
+}
+
+async function loadBatch(i) {
+  if (!batchQueue.length || i < 0 || i >= batchQueue.length) return;
+  currentBatchIndex = i;
+  const entry = batchQueue[i];
+
+  document.getElementById('card-type').value = entry.type;
+  onTypeChange();
+  if (entry.interestId) {
+    document.getElementById('primary-interest').value = entry.interestId;
+  }
+
+  const errEl = document.getElementById('parse-error');
+  errEl.innerHTML = '';
+  let text;
+  try {
+    const res = await fetch(entry.file);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    text = await res.text();
+  } catch (e) {
+    errEl.innerHTML = `<div class="alert alert-error">Couldn't load ${entry.file}: ${e.message}</div>`;
+    return;
+  }
+
+  document.getElementById('json-input').value = text;
+  await parseAndCheck();
+  updateBatchLabel();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateBatchLabel() {
+  const el = document.getElementById('batch-progress');
+  if (!el || !batchQueue.length) return;
+  const entry = batchQueue[currentBatchIndex];
+  const label = entry.interestName ? `${entry.type} · ${entry.interestName}` : entry.type;
+  el.innerHTML = `<strong>Batch ${currentBatchIndex + 1} of ${batchQueue.length}</strong> — ${esc(label)}`;
+}
+
+async function parseAndCheck() {
+  const errEl = document.getElementById('parse-error');
+  errEl.innerHTML = '';
+  const raw = document.getElementById('json-input').value.trim();
+  if (!raw) { errEl.innerHTML = '<div class="alert alert-error">Paste a JSON array first.</div>'; return; }
+
+  let cards;
+  try { cards = JSON.parse(raw); if (!Array.isArray(cards)) cards = [cards]; }
+  catch(e) { errEl.innerHTML = '<div class="alert alert-error">Invalid JSON. Check for missing brackets or quotes.</div>'; return; }
+
+  parsedCards = cards;
+  cardStates = cards.map(() => 'approved');
+
+  const type = document.getElementById('card-type').value;
+  const perCard = isPerCard();
+
+  // Init per-card interests
+  if (perCard) {
+    const defaults = DEFAULT_TAGS[type] || [];
+    cardInterests = cards.map(() => [...defaults]);
+  } else {
+    const primaryId = document.getElementById('primary-interest').value;
+    cardInterests = cards.map(() => [primaryId]);
+  }
+
+  document.getElementById('parse-badge').style.display = 'inline-flex';
+  document.getElementById('parse-badge').textContent = `${cards.length} cards`;
+  document.getElementById('insert-result').innerHTML = '';
+  document.getElementById('insert-progress').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+
+  existingTitles = await fetchExistingTitles(type);
+  renderReview();
+}
+
+function renderReview() {
+  const type = document.getElementById('card-type').value;
+  const perCard = isPerCard();
+  const container = document.getElementById('cards-container');
+  const dupSummary = document.getElementById('dup-summary');
+  container.innerHTML = '';
+
+  let dupCount = 0;
+  parsedCards.forEach((card, idx) => {
+    const title = getTitleFromCard(card, type);
+    const isDup = existingTitles.some(et => isSimilar(et, title));
+    if (isDup) dupCount++;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-wrapper';
+    wrapper.id = `cw-${idx}`;
+
+    // Toolbar
+    const toolbar = document.createElement('div');
+    toolbar.className = 'card-toolbar';
+    toolbar.innerHTML = `
+      <span class="card-status ${isDup ? 's-dup' : 's-ok'}" id="cstatus-${idx}">${isDup ? '⚠ Possible duplicate' : '✓ New card'}</span>
+      <button class="btn btn-secondary btn-sm" onclick="toggleEdit(${idx})">Edit</button>
+      <button class="btn btn-danger btn-sm" id="rbtn-${idx}" onclick="toggleReject(${idx})">Reject</button>`;
+    wrapper.appendChild(toolbar);
+
+    // Card render
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body-area';
+    cardBody.id = `cbody-${idx}`;
+    cardBody.innerHTML = renderCard(card, type);
+    wrapper.appendChild(cardBody);
+
+    // Per-card interest selector
+    if (perCard) {
+      const iArea = document.createElement('div');
+      iArea.className = 'card-interests-area';
+      iArea.innerHTML = `
+        <div class="card-interests-label">
+          Tag this card to interests
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">Top checked interest = primary</span>
+        </div>
+        <div class="interest-grid" id="ig-${idx}"></div>
+        <div class="no-interest-warn" id="niw-${idx}">⚠ Select at least one interest</div>`;
+      wrapper.appendChild(iArea);
+    }
+
+    // Edit area
+    const editArea = document.createElement('div');
+    editArea.className = 'edit-area';
+    editArea.id = `ea-${idx}`;
+    editArea.innerHTML = buildEditForm(card, type, idx);
+    wrapper.appendChild(editArea);
+
+    container.appendChild(wrapper);
+
+    // Populate per-card interest checkboxes
+    if (perCard) {
+      const grid = document.getElementById(`ig-${idx}`);
+      INTERESTS.forEach(interest => {
+        const lbl = document.createElement('label');
+        lbl.className = 'i-check';
+        const checked = cardInterests[idx].includes(interest.id);
+        if (checked) lbl.classList.add('on');
+        lbl.innerHTML = `<input type="checkbox" value="${interest.id}" ${checked ? 'checked' : ''} onchange="toggleCardInterest(${idx},'${interest.id}',this.checked);this.closest('.i-check').classList.toggle('on',this.checked);validateCardInterests(${idx});updateConfirmSummary()"> ${interest.name}`;
+        grid.appendChild(lbl);
+      });
+    }
+  });
+
+  dupSummary.innerHTML = dupCount > 0
+    ? `<div class="alert alert-warning">⚠ ${dupCount} possible duplicate${dupCount > 1 ? 's' : ''} flagged. Review before confirming.</div>`
+    : '<div class="alert alert-success">✓ No duplicates detected.</div>';
+
+  document.getElementById('batch-tag-panel').style.display = perCard ? 'none' : 'block';
+  document.getElementById('review-badge').textContent = `${parsedCards.length} cards`;
+  updateConfirmSummary();
+  document.getElementById('review-section').style.display = 'block';
+}
+
+function toggleCardInterest(cardIdx, interestId, checked) {
+  if (checked && !cardInterests[cardIdx].includes(interestId)) {
+    cardInterests[cardIdx].push(interestId);
+  } else if (!checked) {
+    cardInterests[cardIdx] = cardInterests[cardIdx].filter(id => id !== interestId);
+  }
+}
+
+function validateCardInterests(idx) {
+  const warn = document.getElementById(`niw-${idx}`);
+  if (warn) warn.style.display = cardInterests[idx].length === 0 ? 'block' : 'none';
+}
+
+function renderCard(card, type) {
+  if (type === 'scripture') return `<div class="verse-block"><div class="verse-eyebrow">Scripture · CSB</div><p class="verse-text">"${esc(card.verse||'')}"</p><div class="verse-ref">${esc(card.reference||'')}</div><p class="verse-context">${esc(card.context||'')}</p></div>`;
+  if (type === 'quote') return `<div class="quote-block"><div class="quote-eyebrow">Quote</div><p class="quote-text">"${esc(card.quote||'')}"</p><div class="quote-attr">— ${esc(card.author||'')}${card.source ? ' · '+esc(card.source) : ''}</div><p class="quote-context">${esc(card.context||'')}</p></div>`;
+  if (type === 'quick_facts') return `<div class="qf-card"><div class="qf-eyebrow">Quick Fact</div><p class="qf-fact">${esc(card.fact||'')}</p><span class="qf-search">${esc(card.search_prompt||'')}</span></div>`;
+  if (type === 'book_summary') {
+    const ideas = (card.ideas||[]).map(i => `<div class="idea"><div class="idea-n">${esc(i.number)} /</div><div class="idea-t">${esc(i.title)}</div><div class="idea-b">${esc(i.body)}</div></div>`).join('');
+    return `<div class="book-card"><div class="book-hdr"><div class="book-spine">${card.cover_emoji||'📚'}</div><div><div class="book-ttl">${esc(card.title||'')}</div><div class="book-auth">${esc(card.author||'')}</div></div></div><div class="book-ideas"><div class="ideas-lbl">${(card.ideas||[]).length} ideas</div>${ideas}</div><div class="book-ftr">${esc(card.search_prompt||'')}</div></div>`;
+  }
+  if (type === 'food_spotlight') {
+    const specs = Object.entries(card.specs||{}).map(([k,v]) => `<div class="spec"><div class="spec-lbl">${esc(k)}</div><div class="spec-val">${esc(v)}</div></div>`).join('');
+    return `<div class="food-card"><div class="food-hdr"><div class="food-nm">${esc(card.name||'')}</div><div class="food-bdgs">${(card.badges||[]).map(b=>`<span class="food-bdg">${esc(b)}</span>`).join('')}</div></div><div class="food-bd"><p class="food-intro">${esc(card.intro||'')}</p><div class="food-specs">${specs}</div><div class="food-slbl">What the research shows</div><p class="food-txt">${esc(card.what_research_shows||'')}</p><div class="food-slbl">Caveats</div><p class="food-txt">${esc(card.caveats||'')}</p><div class="food-vrd"><div class="food-vrd-lbl">Bottom line</div><p>${esc(card.bottom_line||'')}</p></div></div></div>`;
+  }
+  if (type === 'protocol') {
+    const specs = Object.entries(card.specs||{}).map(([k,v]) => `<div class="spec"><div class="spec-lbl">${esc(k)}</div><div class="spec-val">${esc(v)}</div></div>`).join('');
+    return `<div class="proto-card"><div class="proto-hdr"><div class="proto-nm">${esc(card.name||'')}</div><div style="display:flex;gap:0.4rem;flex-wrap:wrap;"><span class="proto-bdg">Evidence: ${esc(card.evidence_level||'')}</span><span class="proto-src">${esc(card.source||'')}</span></div></div><div class="proto-bd"><p class="proto-ov">${esc(card.overview||'')}</p><div class="proto-specs">${specs}</div><p class="proto-sci">${esc(card.how_it_works||'')}</p><div class="proto-act"><div class="proto-act-lbl">How to start tomorrow</div><p>${esc(card.how_to_start||'')}</p></div></div></div>`;
+  }
+  if (type === 'research') return `<div class="res-card"><div class="res-jrnl">${esc(card.journal||'')} · ${esc(card.published_at||'')}</div><div class="res-ttl">${esc(card.title||'')}</div><span class="res-tldr-lbl">TL;DR</span><p class="res-body">${esc(card.tldr||'')}</p><p class="res-body">${esc(card.body||'')}</p><div class="res-why">${esc(card.takeaway||'')}</div></div>`;
+  return '<div>Unknown type</div>';
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function buildEditForm(card, type, idx) {
+  const skipKeys = new Set(['ideas','specs','badges']);
+  let html = Object.entries(card).filter(([k]) => !skipKeys.has(k)).map(([k,v]) => `
+    <div class="edit-field">
+      <label class="field-label">${k}</label>
+      <textarea rows="3" onchange="parsedCards[${idx}]['${k}']=this.value">${v}</textarea>
+    </div>`).join('');
+
+  if (type === 'book_summary' && card.ideas) {
+    html += '<label class="field-label" style="margin-top:0.5rem;">Ideas</label>';
+    card.ideas.forEach((idea,i) => {
+      html += `<div class="edit-idea-block">
+        <label class="field-label">Idea ${idea.number} — Title</label>
+        <textarea rows="2" onchange="parsedCards[${idx}].ideas[${i}].title=this.value">${idea.title}</textarea>
+        <label class="field-label" style="margin-top:0.5rem;">Body</label>
+        <textarea rows="4" onchange="parsedCards[${idx}].ideas[${i}].body=this.value">${idea.body}</textarea>
+      </div>`;
+    });
+  }
+
+  if ((type === 'food_spotlight' || type === 'protocol') && card.specs) {
+    html += '<label class="field-label" style="margin-top:0.5rem;">Specs</label>';
+    Object.entries(card.specs).forEach(([k,v]) => {
+      html += `<div class="edit-field">
+        <label class="field-label">${k}</label>
+        <textarea rows="1" onchange="parsedCards[${idx}].specs['${k}']=this.value">${v}</textarea>
+      </div>`;
+    });
+  }
+
+  html += `<div class="btn-row"><button class="btn btn-primary btn-sm" onclick="applyEdit(${idx})">Apply &amp; Close</button></div>`;
+  return html;
+}
+
+function toggleEdit(idx) { document.getElementById(`ea-${idx}`).classList.toggle('open'); }
+function applyEdit(idx) {
+  const type = document.getElementById('card-type').value;
+  document.getElementById(`cbody-${idx}`).innerHTML = renderCard(parsedCards[idx], type);
+  document.getElementById(`ea-${idx}`).classList.remove('open');
+  updateConfirmSummary();
+}
+
+function toggleReject(idx) {
+  const rejected = cardStates[idx] === 'rejected';
+  cardStates[idx] = rejected ? 'approved' : 'rejected';
+  document.getElementById(`cw-${idx}`).classList.toggle('rejected', !rejected);
+  document.getElementById(`rbtn-${idx}`).textContent = rejected ? 'Reject' : 'Undo Reject';
+  updateConfirmSummary();
+}
+
+function updateConfirmSummary() {
+  const approved = cardStates.filter(s => s === 'approved').length;
+  const rejected = cardStates.filter(s => s === 'rejected').length;
+  const perCard = isPerCard();
+  const batchExtra = Array.from(document.querySelectorAll('#batch-tag-grid input:checked')).length;
+  const primaryName = document.getElementById('primary-interest').options[document.getElementById('primary-interest').selectedIndex]?.text || '';
+
+  let msg = `<strong>${approved}</strong> card${approved !== 1 ? 's' : ''} will be inserted`;
+  if (rejected > 0) msg += ` · <span style="color:var(--red)">${rejected} rejected</span>`;
+  if (!perCard) {
+    msg += `<br>Tagged to: <strong>${primaryName}</strong>`;
+    if (batchExtra > 0) msg += ` + ${batchExtra} additional interest${batchExtra !== 1 ? 's' : ''}`;
+  } else {
+    msg += `<br>Each card uses its own interest selections below.`;
+  }
+  document.getElementById('confirm-summary').innerHTML = msg;
+}
+
+function preInsertValidate() {
+  const errEl = document.getElementById('pre-insert-error');
+  errEl.innerHTML = '';
+
+  if (!sbUrl() || !sbKey()) {
+    errEl.innerHTML = '<div class="alert alert-error">Enter your Supabase URL and anon key in Step 1 first.</div>';
+    return false;
+  }
+
+  if (!connVerified) {
+    errEl.innerHTML = '<div class="alert alert-warning">Connection not verified. Hit "Test Connection" in Step 1 before inserting.</div>';
+    return false;
+  }
+
+  const perCard = isPerCard();
+  if (perCard) {
+    const approvedIndices = cardStates.map((s,i) => s === 'approved' ? i : -1).filter(i => i >= 0);
+    const missing = approvedIndices.filter(idx => cardInterests[idx].length === 0);
+    if (missing.length > 0) {
+      missing.forEach(idx => {
+        const warn = document.getElementById(`niw-${idx}`);
+        if (warn) warn.style.display = 'block';
+        const wrapper = document.getElementById(`cw-${idx}`);
+        if (wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      errEl.innerHTML = `<div class="alert alert-error">${missing.length} card${missing.length > 1 ? 's have' : ' has'} no interests selected. Scroll up and tag them, or reject them.</div>`;
+      return false;
+    }
+  }
+
+  const toInsert = cardStates.filter(s => s === 'approved').length;
+  if (toInsert === 0) {
+    errEl.innerHTML = '<div class="alert alert-error">No approved cards to insert.</div>';
+    return false;
+  }
+
+  return true;
+}
+
+async function confirmInsert() {
+  if (!preInsertValidate()) return;
+
+  // Re-verify connection live before inserting
+  const errEl2 = document.getElementById('pre-insert-error');
+  try {
+    await sbFetch('/rest/v1/interests?select=name&limit=1');
+  } catch(e) {
+    errEl2.innerHTML = '<div class="alert alert-error">Connection failed. Check your Supabase URL and anon key and try again.</div>';
+    return;
+  }
+
+  const type = document.getElementById('card-type').value;
+  const perCard = isPerCard();
+  const primaryId = document.getElementById('primary-interest').value;
+  const batchExtra = Array.from(document.querySelectorAll('#batch-tag-grid input:checked')).map(cb => cb.value);
+
+  const toInsert = parsedCards.map((card,idx) => ({card,idx})).filter(({idx}) => cardStates[idx] === 'approved');
+
+  document.getElementById('confirm-btn').disabled = true;
+  document.getElementById('insert-progress').style.display = 'block';
+  document.getElementById('insert-result').innerHTML = '';
+
+  const progressText = document.getElementById('progress-text');
+  const progressFill = document.getElementById('progress-fill');
+
+  let inserted = 0, failed = 0, tagFailed = 0;
+
+  for (let i = 0; i < toInsert.length; i++) {
+    const {card, idx} = toInsert[i];
+    const title = getTitleFromCard(card, type);
+    progressText.textContent = `Inserting ${i+1} of ${toInsert.length}: ${title.substring(0,50)}...`;
+    progressFill.style.width = `${Math.round((i / toInsert.length) * 100)}%`;
+
+    // Determine interests
+    let interestIds;
+    if (perCard) {
+      interestIds = cardInterests[idx];
+    } else {
+      interestIds = [primaryId, ...batchExtra.filter(id => id !== primaryId)];
+    }
+
+    const primaryForCard = interestIds[0];
+
+    try {
+      const result = await sbFetch('/rest/v1/cards', {
+        method: 'POST',
+        body: JSON.stringify({
+          type,
+          interest_id: primaryForCard,
+          title: title.substring(0, 255),
+          content: card,
+          is_evergreen: true,
+          created_by: 'manual'
+        })
+      });
+      const cardId = result[0].id;
+      const tagRows = interestIds.map(id => ({ card_id: cardId, interest_id: id }));
+      try {
+        await sbFetch('/rest/v1/card_interests', { method: 'POST', body: JSON.stringify(tagRows) });
+        inserted++;
+      } catch(tagErr) {
+        console.error('Insert succeeded but tagging failed for card:', cardId, tagErr.message);
+        tagFailed++;
+      }
+    } catch(e) {
+      console.error('Insert failed:', e.message);
+      failed++;
+    }
+  }
+
+  progressFill.style.width = '100%';
+  progressText.textContent = 'Done.';
+  let resultMsg = '';
+  if (failed === 0 && tagFailed === 0) {
+    resultMsg = `<div class="alert alert-success">✓ ${inserted} card${inserted !== 1 ? 's' : ''} inserted and tagged successfully.</div>`;
+  } else {
+    if (failed > 0) resultMsg += `<div class="alert alert-error">✗ ${failed} card${failed !== 1 ? 's' : ''} failed to insert. Check the browser console.</div>`;
+    if (tagFailed > 0) resultMsg += `<div class="alert alert-warning">⚠ ${tagFailed} card${tagFailed !== 1 ? 's were' : ' was'} inserted but not tagged — they are in the database but invisible to users. Tag them manually in Supabase using the card IDs in the browser console.</div>`;
+    if (inserted > 0) resultMsg += `<div class="alert alert-success">✓ ${inserted} card${inserted !== 1 ? 's' : ''} inserted and tagged successfully.</div>`;
+  }
+  document.getElementById('insert-result').innerHTML = resultMsg;
+  // Fix 6: Lock confirm button after insert to prevent double-insert
+  document.getElementById('confirm-btn').disabled = true;
+  document.getElementById('confirm-btn').textContent = 'INSERTED';
+  document.getElementById('confirm-btn').style.background = 'var(--surface2)';
+  document.getElementById('confirm-btn').style.color = 'var(--text-muted)';
+  document.getElementById('confirm-btn').style.border = '0.5px solid var(--border-med)';
+  // Show next-batch or start-new-batch button depending on mode
+  const newBatchBtn = document.createElement('button');
+  newBatchBtn.className = 'btn btn-secondary';
+  newBatchBtn.style.marginTop = '0.75rem';
+  if (batchQueue.length && currentBatchIndex < batchQueue.length - 1) {
+    newBatchBtn.textContent = `Next Batch → (${currentBatchIndex + 2} of ${batchQueue.length})`;
+    newBatchBtn.onclick = () => loadBatch(currentBatchIndex + 1);
+  } else if (batchQueue.length) {
+    newBatchBtn.textContent = 'All batches complete ✓';
+    newBatchBtn.disabled = true;
+  } else {
+    newBatchBtn.textContent = 'Start New Batch';
+    newBatchBtn.onclick = clearAll;
+  }
+  document.getElementById('insert-result').appendChild(newBatchBtn);
+}
+
+function clearAll() {
+  document.getElementById('json-input').value = '';
+  document.getElementById('parse-error').innerHTML = '';
+  document.getElementById('pre-insert-error').innerHTML = '';
+  document.getElementById('insert-result').innerHTML = '';
+  document.getElementById('insert-progress').style.display = 'none';
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('review-section').style.display = 'none';
+  document.getElementById('parse-badge').style.display = 'none';
+  // Reset batch tag grid checkboxes
+  document.querySelectorAll('#batch-tag-grid input').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.i-check').classList.remove('on');
+  });
+  parsedCards = []; cardStates = []; cardInterests = []; existingTitles = [];
+}
+
+(async function bootstrapManifest() {
+  const params = new URLSearchParams(window.location.search);
+  const manifestPath = params.get('manifest');
+  if (!manifestPath) return;
+  try {
+    const res = await fetch(manifestPath);
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    batchQueue = await res.json();
+    if (!Array.isArray(batchQueue) || !batchQueue.length) throw new Error('Manifest is empty or not an array');
+    document.getElementById('batch-nav').style.display = 'block';
+    await loadBatch(0);
+  } catch (e) {
+    document.getElementById('parse-error').innerHTML = `<div class="alert alert-error">Couldn't load manifest at ${manifestPath}: ${e.message}</div>`;
+  }
+})();
+</script>
+</body>
+</html>
