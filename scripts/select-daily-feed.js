@@ -28,6 +28,9 @@ const INTEREST_GATED = {
   quote:     'quotes-wisdom',
 }
 
+// A seen card becomes eligible to resurface after this many days
+const REPEAT_COOLDOWN_DAYS = 45
+
 async function getTodayString() {
   const now = new Date()
   return now.toISOString().split('T')[0] // YYYY-MM-DD
@@ -54,16 +57,29 @@ async function getUserInterests(userId) {
 }
 
 async function getSeenCardIds(userId) {
+  const cooldownStart = new Date(Date.now() - REPEAT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString()
+
   const { data, error } = await supabase
     .from('user_card_history')
     .select('card_id')
     .eq('user_id', userId)
+    .gte('seen_at', cooldownStart)
 
   if (error) throw new Error(`Failed to fetch card history for user ${userId}: ${error.message}`)
   return data.map((row) => row.card_id)
 }
 
-async function getEligibleCards(interestIds, seenCardIds, type, count) {
+async function getSavedCardIds(userId) {
+  const { data, error } = await supabase
+    .from('user_saved_cards')
+    .select('card_id')
+    .eq('user_id', userId)
+
+  if (error) throw new Error(`Failed to fetch saved cards for user ${userId}: ${error.message}`)
+  return data.map((row) => row.card_id)
+}
+
+async function getEligibleCards(interestIds, excludedCardIds, type, count) {
   let query = supabase
     .from('card_interests')
     .select('card_id, cards(id, type)')
@@ -73,9 +89,9 @@ async function getEligibleCards(interestIds, seenCardIds, type, count) {
   const { data, error } = await query
   if (error) throw new Error(`Failed to fetch cards of type ${type}: ${error.message}`)
 
-  // Filter out already seen cards and nulls (type mismatch)
+  // Filter out excluded cards (seen within cooldown, or saved to library) and nulls (type mismatch)
   const eligible = data
-    .filter((row) => row.cards && !seenCardIds.includes(row.card_id))
+    .filter((row) => row.cards && !excludedCardIds.includes(row.card_id))
     .map((row) => row.card_id)
 
   // Deduplicate (same card can be tagged to multiple interests)
@@ -90,32 +106,36 @@ async function selectFeedForUser(userId, today) {
   const interests = await getUserInterests(userId)
   const interestIds = interests.map((i) => i.id)
   const interestSlugs = interests.map((i) => i.slug)
-  const seenCardIds = await getSeenCardIds(userId)
+  const [seenCardIds, savedCardIds] = await Promise.all([
+    getSeenCardIds(userId),
+    getSavedCardIds(userId),
+  ])
+  const excludedCardIds = [...new Set([...seenCardIds, ...savedCardIds])]
 
   const selectedCardIds = []
 
   // Scripture — only if user follows scripture-faith
   if (interestSlugs.includes('scripture-faith')) {
-    const cards = await getEligibleCards(interestIds, seenCardIds, 'scripture', CARD_COUNTS.scripture)
+    const cards = await getEligibleCards(interestIds, excludedCardIds, 'scripture', CARD_COUNTS.scripture)
     selectedCardIds.push(...cards)
   }
 
   // Quote — only if user follows quotes-wisdom
   if (interestSlugs.includes('quotes-wisdom')) {
-    const cards = await getEligibleCards(interestIds, seenCardIds, 'quote', CARD_COUNTS.quote)
+    const cards = await getEligibleCards(interestIds, excludedCardIds, 'quote', CARD_COUNTS.quote)
     selectedCardIds.push(...cards)
   }
 
   // Quick facts — 2 per followed interest
   for (const interest of interests) {
-    const cards = await getEligibleCards([interest.id], seenCardIds, 'quick_facts', CARD_COUNTS.quick_facts)
+    const cards = await getEligibleCards([interest.id], excludedCardIds, 'quick_facts', CARD_COUNTS.quick_facts)
     selectedCardIds.push(...cards)
   }
 
   // Global types — pulled from all followed interests combined
   for (const type of GLOBAL_TYPES) {
     const count = CARD_COUNTS[type]
-    const cards = await getEligibleCards(interestIds, seenCardIds, type, count)
+    const cards = await getEligibleCards(interestIds, excludedCardIds, type, count)
     selectedCardIds.push(...cards)
   }
 

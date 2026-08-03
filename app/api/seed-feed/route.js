@@ -14,6 +14,9 @@ const CARD_COUNTS = {
 
 const GLOBAL_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research']
 
+// A seen card becomes eligible to resurface after this many days
+const REPEAT_COOLDOWN_DAYS = 45
+
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5)
 }
@@ -92,19 +95,31 @@ export async function POST(request) {
     const interestIds = interests.map((i) => i.id)
     const interestSlugs = interests.map((i) => i.slug)
 
-    // Get seen card IDs
-    const { data: seen } = await supabase
-      .from('user_card_history')
-      .select('card_id')
-      .eq('user_id', user.id)
+    // Get seen card IDs within the repeat cooldown window, plus saved (library) cards
+    const cooldownStart = new Date(Date.now() - REPEAT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
-    const seenCardIds = new Set(seen?.map((r) => r.card_id) || [])
+    const [{ data: seen }, { data: saved }] = await Promise.all([
+      supabase
+        .from('user_card_history')
+        .select('card_id')
+        .eq('user_id', user.id)
+        .gte('seen_at', cooldownStart),
+      supabase
+        .from('user_saved_cards')
+        .select('card_id')
+        .eq('user_id', user.id),
+    ])
+
+    const excludedCardIds = new Set([
+      ...(seen?.map((r) => r.card_id) || []),
+      ...(saved?.map((r) => r.card_id) || []),
+    ])
 
     const selectedCardIds = []
 
     async function pick(interestSubset, type, count) {
       const eligible = await getCardIdsByType(supabase, interestSubset, type)
-      const unseen = eligible.filter((id) => !seenCardIds.has(id))
+      const unseen = eligible.filter((id) => !excludedCardIds.has(id))
       return shuffle(unseen).slice(0, count)
     }
 

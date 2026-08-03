@@ -26,7 +26,7 @@ async function markCardsSeen(supabase, userId, cards) {
   }))
   await supabase
     .from('user_card_history')
-    .upsert(rows, { onConflict: 'user_id,card_id', ignoreDuplicates: true })
+    .upsert(rows, { onConflict: 'user_id,card_id' })
 }
 
 // Engagement tracking.
