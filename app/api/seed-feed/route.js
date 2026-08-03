@@ -29,6 +29,25 @@ function shuffle(arr) {
   return out
 }
 
+// PostgREST truncates at 1000 rows without telling you. A truncated history
+// reads as "never seen", which would reintroduce cards the user just read, so
+// page through it. Ordering keeps .range() windows from overlapping or
+// skipping rows between requests.
+async function fetchAllRows(buildQuery, orderColumn) {
+  const PAGE_SIZE = 1000
+  const rows = []
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await buildQuery()
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) throw new Error(error.message)
+    rows.push(...data)
+    if (data.length < PAGE_SIZE) return rows
+  }
+}
+
 // `cards!inner` matters. Fetching every card_interests row for the user's
 // interests and filtering by type afterward hits PostgREST's 1000-row cap
 // long before it sees the whole pool, so most cards of the rarer types are
@@ -104,21 +123,27 @@ export async function POST(request) {
     // Get seen card IDs within the repeat cooldown window, plus saved (library) cards
     const cooldownStart = new Date(Date.now() - REPEAT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
-    const [{ data: seen }, { data: saved }] = await Promise.all([
-      supabase
-        .from('user_card_history')
-        .select('card_id')
-        .eq('user_id', user.id)
-        .gte('seen_at', cooldownStart),
-      supabase
-        .from('user_saved_cards')
-        .select('card_id')
-        .eq('user_id', user.id),
+    const [seen, saved] = await Promise.all([
+      fetchAllRows(
+        () => supabase
+          .from('user_card_history')
+          .select('card_id')
+          .eq('user_id', user.id)
+          .gte('seen_at', cooldownStart),
+        'card_id'
+      ),
+      fetchAllRows(
+        () => supabase
+          .from('user_saved_cards')
+          .select('card_id')
+          .eq('user_id', user.id),
+        'card_id'
+      ),
     ])
 
     const excludedCardIds = new Set([
-      ...(seen?.map((r) => r.card_id) || []),
-      ...(saved?.map((r) => r.card_id) || []),
+      ...seen.map((r) => r.card_id),
+      ...saved.map((r) => r.card_id),
     ])
 
     const selectedCardIds = []

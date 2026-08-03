@@ -48,6 +48,27 @@ function shuffle(arr) {
   return out
 }
 
+// PostgREST caps every response at 1000 rows and gives no signal when it
+// truncates. A daily reader adds ~15 history rows a day, so the 45-day window
+// reaches that cap in a couple of months — and a truncated history reads as
+// "never seen", which quietly reintroduces cards the user just read. Page
+// through explicitly. The order matters: without a stable sort, .range()
+// windows can overlap or skip rows between requests.
+async function fetchAllRows(buildQuery, orderColumn) {
+  const PAGE_SIZE = 1000
+  const rows = []
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await buildQuery()
+      .order(orderColumn, { ascending: true })
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) throw error
+    rows.push(...data)
+    if (data.length < PAGE_SIZE) return rows
+  }
+}
+
 async function getActiveUsers() {
   const { data, error } = await supabase
     .from('users')
@@ -71,24 +92,34 @@ async function getUserInterests(userId) {
 async function getSeenCardIds(userId) {
   const cooldownStart = new Date(Date.now() - REPEAT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data, error } = await supabase
-    .from('user_card_history')
-    .select('card_id')
-    .eq('user_id', userId)
-    .gte('seen_at', cooldownStart)
-
-  if (error) throw new Error(`Failed to fetch card history for user ${userId}: ${error.message}`)
-  return data.map((row) => row.card_id)
+  try {
+    const rows = await fetchAllRows(
+      () => supabase
+        .from('user_card_history')
+        .select('card_id')
+        .eq('user_id', userId)
+        .gte('seen_at', cooldownStart),
+      'card_id'
+    )
+    return rows.map((row) => row.card_id)
+  } catch (err) {
+    throw new Error(`Failed to fetch card history for user ${userId}: ${err.message}`)
+  }
 }
 
 async function getSavedCardIds(userId) {
-  const { data, error } = await supabase
-    .from('user_saved_cards')
-    .select('card_id')
-    .eq('user_id', userId)
-
-  if (error) throw new Error(`Failed to fetch saved cards for user ${userId}: ${error.message}`)
-  return data.map((row) => row.card_id)
+  try {
+    const rows = await fetchAllRows(
+      () => supabase
+        .from('user_saved_cards')
+        .select('card_id')
+        .eq('user_id', userId),
+      'card_id'
+    )
+    return rows.map((row) => row.card_id)
+  } catch (err) {
+    throw new Error(`Failed to fetch saved cards for user ${userId}: ${err.message}`)
+  }
 }
 
 // `cards!inner` matters. With a plain embed, PostgREST applies `cards.type`

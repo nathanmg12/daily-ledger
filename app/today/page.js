@@ -513,74 +513,74 @@ export default async function TodayPage() {
 
             {/* Quick Facts */}
             {grouped.quick_facts?.length > 0 && (
-              <FadeIn delay={150}>
-                <div id="section-quick_facts" className="tdl-section">
+              <div id="section-quick_facts" className="tdl-section">
+                <FadeIn>
                   <SectionHeader tag="quick_facts" label="Quick Facts" count={`${grouped.quick_facts.length} facts`} />
-                  <div className="tdl-qf-grid">
-                    {grouped.quick_facts.map((card, i) => (
-                      <FadeIn key={card.id} delay={i * 60}>
-                        <QuickFactCard card={card} savedCardIds={savedCardIds} userId={user.id} />
-                      </FadeIn>
-                    ))}
-                  </div>
+                </FadeIn>
+                <div className="tdl-qf-grid">
+                  {grouped.quick_facts.map((card, i) => (
+                    <FadeIn key={card.id} delay={i * 60}>
+                      <QuickFactCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                    </FadeIn>
+                  ))}
                 </div>
-              </FadeIn>
+              </div>
             )}
 
             {/* Books */}
             {grouped.book_summary?.length > 0 && (
-              <FadeIn delay={100}>
-                <div id="section-book_summary" className="tdl-section">
+              <div id="section-book_summary" className="tdl-section">
+                <FadeIn>
                   <SectionHeader tag="book_summary" label="Book Ideas" count={`${grouped.book_summary.length} book${grouped.book_summary.length !== 1 ? 's' : ''}`} />
-                  {grouped.book_summary.map((card, i) => (
-                    <FadeIn key={card.id} delay={i * 80}>
-                      <BookSummaryCard card={card} savedCardIds={savedCardIds} userId={user.id} />
-                    </FadeIn>
-                  ))}
-                </div>
-              </FadeIn>
+                </FadeIn>
+                {grouped.book_summary.map((card, i) => (
+                  <FadeIn key={card.id} delay={i * 80}>
+                    <BookSummaryCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                  </FadeIn>
+                ))}
+              </div>
             )}
 
             {/* Food Spotlight */}
             {grouped.food_spotlight?.length > 0 && (
-              <FadeIn delay={100}>
-                <div id="section-food_spotlight" className="tdl-section">
+              <div id="section-food_spotlight" className="tdl-section">
+                <FadeIn>
                   <SectionHeader tag="food_spotlight" label="Food Spotlight" count={`Today: ${grouped.food_spotlight[0].content.name}`} />
-                  {grouped.food_spotlight.map((card) => (
-                    <FadeIn key={card.id}>
-                      <FoodSpotlightCard card={card} savedCardIds={savedCardIds} userId={user.id} />
-                    </FadeIn>
-                  ))}
-                </div>
-              </FadeIn>
+                </FadeIn>
+                {grouped.food_spotlight.map((card) => (
+                  <FadeIn key={card.id}>
+                    <FoodSpotlightCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                  </FadeIn>
+                ))}
+              </div>
             )}
 
             {/* Research */}
             {grouped.research?.length > 0 && (
-              <FadeIn delay={100}>
-                <div id="section-research" className="tdl-section">
+              <div id="section-research" className="tdl-section">
+                <FadeIn>
                   <SectionHeader tag="research" label="Research Spotlight" count={`${grouped.research.length} paper${grouped.research.length !== 1 ? 's' : ''}`} />
-                  {grouped.research.map((card, i) => (
-                    <FadeIn key={card.id} delay={i * 80}>
-                      <ResearchCard card={card} savedCardIds={savedCardIds} userId={user.id} />
-                    </FadeIn>
-                  ))}
-                </div>
-              </FadeIn>
+                </FadeIn>
+                {grouped.research.map((card, i) => (
+                  <FadeIn key={card.id} delay={i * 80}>
+                    <ResearchCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                  </FadeIn>
+                ))}
+              </div>
             )}
 
             {/* Protocol */}
             {grouped.protocol?.length > 0 && (
-              <FadeIn delay={100}>
-                <div id="section-protocol" className="tdl-section">
+              <div id="section-protocol" className="tdl-section">
+                <FadeIn>
                   <SectionHeader tag="protocol" label="Protocol Spotlight" count={`Today: ${grouped.protocol[0].content.name}`} />
-                  {grouped.protocol.map((card) => (
-                    <FadeIn key={card.id}>
-                      <ProtocolCard card={card} savedCardIds={savedCardIds} userId={user.id} />
-                    </FadeIn>
-                  ))}
-                </div>
-              </FadeIn>
+                </FadeIn>
+                {grouped.protocol.map((card) => (
+                  <FadeIn key={card.id}>
+                    <ProtocolCard card={card} savedCardIds={savedCardIds} userId={user.id} />
+                  </FadeIn>
+                ))}
+              </div>
             )}
           </>
         )}
