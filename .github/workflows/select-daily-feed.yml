@@ -20,7 +20,17 @@ jobs:
         run: npm install @supabase/supabase-js
 
       - name: Run feed selection
+        id: select
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/select-daily-feed.js
+
+      # The script exits non-zero if any user ended up with no usable feed.
+      # This step makes the reason obvious in the failure email rather than
+      # requiring a dig through the raw log.
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "::error title=Daily feed generation failed::One or more users have no feed for today. See the run summary for the affected user IDs."
+          exit 1
