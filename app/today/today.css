@@ -399,6 +399,71 @@
 }
 .tdl-protocol-action p { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
 
+/* Reading progress ------------------------------------------------------- */
+
+.tdl-progress {
+  position: fixed;
+  top: 52px; /* directly under the sticky nav */
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 99; /* below the nav's 100 */
+  pointer-events: none;
+}
+
+.tdl-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.8;
+  transform-origin: left center;
+  /* No transition: this tracks scroll position directly, and easing it would
+     make the rail lag behind the page. */
+}
+
+/* End of ledger ---------------------------------------------------------- */
+
+.tdl-end {
+  padding-top: 2.5rem;
+  text-align: center;
+}
+
+.tdl-end-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-bottom: 1.4rem;
+}
+
+.tdl-end-rule::before,
+.tdl-end-rule::after {
+  content: '';
+  height: 0.5px;
+  width: 44px;
+  background: var(--border-med);
+}
+
+.tdl-end-mark {
+  color: var(--accent);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.tdl-end-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--text);
+  margin-bottom: 0.45rem;
+}
+
+.tdl-end-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 @media (max-width: 600px) {
   .tdl-page { padding: 2rem 1rem 4rem; }
   .tdl-hero-top { flex-direction: column; }

@@ -6,6 +6,7 @@ import FadeIn from '@/components/FadeIn'
 import SaveShareButtons from '@/components/SaveShareButtons'
 import PushNotificationPrompt from '@/components/PushNotificationPrompt'
 import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt'
+import ReadingProgress from '@/components/ReadingProgress'
 
 async function getUserTopicCount(supabase, userId) {
   const { data, error } = await supabase
@@ -452,6 +453,7 @@ export default async function TodayPage() {
   return (
     <>
       <Nav presentCardTypes={presentCardTypes} />
+      {totalCards > 0 && <ReadingProgress />}
       <div className="tdl-page">
 
         {/* Hero */}
@@ -582,6 +584,16 @@ export default async function TodayPage() {
                 ))}
               </div>
             )}
+
+            <FadeIn>
+              <div className="tdl-end">
+                <div className="tdl-end-rule">
+                  <span className="tdl-end-mark">◇</span>
+                </div>
+                <p className="tdl-end-title">That&rsquo;s today&rsquo;s ledger.</p>
+                <p className="tdl-end-note">New cards tomorrow morning</p>
+              </div>
+            </FadeIn>
           </>
         )}
       </div>
