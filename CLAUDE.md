@@ -187,3 +187,11 @@ logic already in `tdl-card-builder.html` (`normalize` / `isSimilar`).
 titles. **Never write directly to the `cards` or `card_interests` tables.**
 All generated content goes to a review file — Nathan approves and inserts
 manually via the card builder, same as always.
+
+**The card builder needs the service key, not the anon key.** `cards` and
+`card_interests` used to carry `INSERT` policies for the `anon` role with
+`WITH CHECK (true)`. Since the anon key ships in the public client bundle,
+that let anyone write cards into the library and have them served to readers,
+so both policies were dropped on 2026-08-03. Reads are unchanged. If the
+builder starts returning row-level security errors on insert, the key in its
+key field is the anon key and needs swapping for the service key.
