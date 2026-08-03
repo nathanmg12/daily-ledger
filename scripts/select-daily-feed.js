@@ -9,12 +9,19 @@ const supabase = createClient(
 const CARD_COUNTS = {
   scripture:    1,
   quote:        1,
-  quick_facts:  2, // per followed interest
-  book_summary: 2,
+  quick_facts:  2, // per followed interest, then capped by QUICK_FACTS_DAILY_MAX
+  book_summary: 1,
   food_spotlight: 1,
   protocol:     1,
-  research:     2,
+  research:     1,
 }
+
+// A ceiling on quick facts, not a target. Someone following 13 interests would
+// otherwise get 26 quick facts in a day, which is not a finite read. Readers
+// who would land under the cap keep exactly what they would have had —
+// raising them to the cap would burn a narrow interest pool in under two
+// weeks and leave them with nothing eligible until the cooldown lapsed.
+const QUICK_FACTS_DAILY_MAX = 10
 
 // Card types that are served once per user (not multiplied by interest count)
 const GLOBAL_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research']
@@ -198,11 +205,17 @@ async function selectFeedForUser(userId, today) {
     selectedCardIds.push(...cards)
   }
 
-  // Quick facts — 2 per followed interest
+  // Quick facts — 2 per followed interest, then trimmed to the daily ceiling.
+  // Drawing per interest first keeps the spread across topics; the trim is
+  // random so the same interests aren't always the ones dropped.
+  const quickFactIds = []
   for (const interest of interests) {
     const cards = await getEligibleCards([interest.id], excludedCardIds, 'quick_facts', CARD_COUNTS.quick_facts)
-    selectedCardIds.push(...cards)
+    quickFactIds.push(...cards)
   }
+  selectedCardIds.push(
+    ...shuffle([...new Set(quickFactIds)]).slice(0, QUICK_FACTS_DAILY_MAX)
+  )
 
   // Global types — pulled from all followed interests combined
   for (const type of GLOBAL_TYPES) {

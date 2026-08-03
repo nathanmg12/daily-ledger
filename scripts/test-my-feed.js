@@ -10,12 +10,14 @@ const MY_USER_ID = 'a2d33b06-f807-46a3-854f-4edd0b6d5b34'
 const CARD_COUNTS = {
   scripture: 1,
   quote: 1,
-  quick_facts: 2,
-  book_summary: 2,
+  quick_facts: 2, // per followed interest, then capped by QUICK_FACTS_DAILY_MAX
+  book_summary: 1,
   food_spotlight: 1,
   protocol: 1,
-  research: 2,
+  research: 1,
 }
+
+const QUICK_FACTS_DAILY_MAX = 10
 
 const GLOBAL_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research']
 
@@ -99,9 +101,11 @@ async function run() {
   if (interestSlugs.includes('quotes-wisdom')) {
     selectedCardIds.push(...await getEligibleCards(interestIds, excludedCardIds, 'quote', CARD_COUNTS.quote))
   }
+  const quickFactIds = []
   for (const interest of interests) {
-    selectedCardIds.push(...await getEligibleCards([interest.id], excludedCardIds, 'quick_facts', CARD_COUNTS.quick_facts))
+    quickFactIds.push(...await getEligibleCards([interest.id], excludedCardIds, 'quick_facts', CARD_COUNTS.quick_facts))
   }
+  selectedCardIds.push(...shuffle([...new Set(quickFactIds)]).slice(0, QUICK_FACTS_DAILY_MAX))
   for (const type of GLOBAL_TYPES) {
     selectedCardIds.push(...await getEligibleCards(interestIds, excludedCardIds, type, CARD_COUNTS[type]))
   }

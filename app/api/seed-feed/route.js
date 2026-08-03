@@ -5,12 +5,16 @@ import { cookies } from 'next/headers'
 const CARD_COUNTS = {
   scripture:      1,
   quote:          1,
-  quick_facts:    2,
-  book_summary:   2,
+  quick_facts:    2, // per followed interest, then capped by QUICK_FACTS_DAILY_MAX
+  book_summary:   1,
   food_spotlight: 1,
   protocol:       1,
-  research:       2,
+  research:       1,
 }
+
+// See select-daily-feed.js — a ceiling on quick facts, not a target. Readers
+// who would land under it keep what they would have had.
+const QUICK_FACTS_DAILY_MAX = 10
 
 const GLOBAL_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research']
 
@@ -164,10 +168,16 @@ export async function POST(request) {
       selectedCardIds.push(...await pick(interestIds, 'quote', CARD_COUNTS.quote))
     }
 
-    // Quick facts — 2 per individual interest
+    // Quick facts — 2 per individual interest, then trimmed to the daily
+    // ceiling. Per-interest first keeps the topic spread; the trim is random
+    // so the same interests aren't always the ones dropped.
+    const quickFactIds = []
     for (const interest of interests) {
-      selectedCardIds.push(...await pick([interest.id], 'quick_facts', CARD_COUNTS.quick_facts))
+      quickFactIds.push(...await pick([interest.id], 'quick_facts', CARD_COUNTS.quick_facts))
     }
+    selectedCardIds.push(
+      ...shuffle([...new Set(quickFactIds)]).slice(0, QUICK_FACTS_DAILY_MAX)
+    )
 
     // Global types — from all interests combined
     for (const type of GLOBAL_TYPES) {
