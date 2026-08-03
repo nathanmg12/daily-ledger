@@ -55,19 +55,29 @@ async function getSavedCardIds(userId) {
   return data.map((row) => row.card_id)
 }
 
+function shuffle(arr) {
+  const out = [...arr]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+
+// See select-daily-feed.js — `cards!inner` is required for the type filter to
+// restrict parent rows instead of hitting the 1000-row cap first.
 async function getEligibleCards(interestIds, excludedCardIds, type, count) {
   const { data, error } = await supabase
     .from('card_interests')
-    .select('card_id, cards(id, type)')
+    .select('card_id, cards!inner(id, type)')
     .in('interest_id', interestIds)
     .eq('cards.type', type)
   if (error) throw new Error(error.message)
 
-  const eligible = data
-    .filter((row) => row.cards && !excludedCardIds.includes(row.card_id))
-    .map((row) => row.card_id)
-  const unique = [...new Set(eligible)]
-  return unique.sort(() => Math.random() - 0.5).slice(0, count)
+  const excluded = new Set(excludedCardIds)
+  const eligible = [...new Set(data.map((row) => row.card_id))]
+    .filter((id) => !excluded.has(id))
+  return shuffle(eligible).slice(0, count)
 }
 
 async function run() {

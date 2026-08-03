@@ -17,27 +17,33 @@ const GLOBAL_TYPES = ['book_summary', 'food_spotlight', 'protocol', 'research']
 // A seen card becomes eligible to resurface after this many days
 const REPEAT_COOLDOWN_DAYS = 45
 
+// Fisher-Yates. `sort(() => Math.random() - 0.5)` is not a uniform shuffle —
+// comparison sorts assume a consistent comparator, and a random one leaves
+// items biased toward their starting positions.
 function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5)
+  const out = [...arr]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
 }
 
+// `cards!inner` matters. Fetching every card_interests row for the user's
+// interests and filtering by type afterward hits PostgREST's 1000-row cap
+// long before it sees the whole pool, so most cards of the rarer types are
+// invisible. The inner join applies the type filter server-side, keeping
+// each query to just that type's rows.
 async function getCardIdsByType(supabase, interestIds, type) {
-  const { data: ciRows } = await supabase
+  const { data, error } = await supabase
     .from('card_interests')
-    .select('card_id')
+    .select('card_id, cards!inner(id, type)')
     .in('interest_id', interestIds)
+    .eq('cards.type', type)
 
-  if (!ciRows?.length) return []
+  if (error) throw new Error(`Failed to fetch ${type} cards: ${error.message}`)
 
-  const cardIds = [...new Set(ciRows.map((r) => r.card_id))]
-
-  const { data: cards } = await supabase
-    .from('cards')
-    .select('id')
-    .eq('type', type)
-    .in('id', cardIds)
-
-  return cards?.map((c) => c.id) || []
+  return [...new Set((data || []).map((r) => r.card_id))]
 }
 
 export async function POST(request) {
