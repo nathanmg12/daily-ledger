@@ -83,6 +83,28 @@ async function recordActivity(userId) {
   }
 }
 
+// Which edition of *this reader's* ledger they are looking at. Counts from
+// their own first feed rather than a global launch date, so everyone starts at
+// No. 001 on their first day. Calendar-based rather than a count of delivered
+// feeds: a ledger is dated, so a day with no feed still consumed an edition
+// number, the same way a newspaper doesn't renumber after a missed print run.
+async function getEditionNumber(supabase, userId, currentDate) {
+  const { data, error } = await supabase
+    .from('daily_feed')
+    .select('date')
+    .eq('user_id', userId)
+    .order('date', { ascending: true })
+    .limit(1)
+
+  if (error || !data?.length) return null
+
+  const first = new Date(data[0].date + 'T00:00:00Z')
+  const current = new Date(currentDate + 'T00:00:00Z')
+  const days = Math.floor((current - first) / 86400000)
+
+  return days >= 0 ? days + 1 : null
+}
+
 async function getTodayFeed(supabase, userId) {
   const { data: latestFeed, error: latestError } = await supabase
     .from('daily_feed')
@@ -91,7 +113,7 @@ async function getTodayFeed(supabase, userId) {
     .order('date', { ascending: false })
     .limit(1)
 
-  if (latestError || !latestFeed?.length) return []
+  if (latestError || !latestFeed?.length) return { cards: [], date: null }
 
   const latestDate = latestFeed[0].date
 
@@ -103,11 +125,13 @@ async function getTodayFeed(supabase, userId) {
 
   if (error) throw new Error(error.message)
 
-  return data.map((row) => {
+  const cards = data.map((row) => {
     if (!row.cards) return null
     const interests = row.cards.card_interests?.map((ci) => ci.interests?.name).filter(Boolean) || []
     return { ...row.cards, interests }
   }).filter(Boolean)
+
+  return { cards, date: latestDate }
 }
 
 function groupCardsByType(cards) {
@@ -431,15 +455,21 @@ export default async function TodayPage() {
   let cards = []
   let topicCount = 0
   let savedCardIds = new Set()
+  let editionNumber = null
   try {
-    const [feedCards, count, savedData] = await Promise.all([
+    const [feed, count, savedData] = await Promise.all([
       getTodayFeed(supabase, user.id),
       getUserTopicCount(supabase, user.id),
       supabase.from('user_saved_cards').select('card_id').eq('user_id', user.id),
     ])
-    cards = feedCards
+    cards = feed.cards
     topicCount = count
     savedCardIds = new Set(savedData.data?.map(r => r.card_id) || [])
+
+    if (feed.date) {
+      editionNumber = await getEditionNumber(supabase, user.id, feed.date)
+    }
+
     await markCardsSeen(supabase, user.id, cards)
   } catch (e) {
     console.error('Feed error:', e.message)
@@ -463,7 +493,11 @@ export default async function TodayPage() {
               The Daily<br /><em>Ledger</em>
             </h1>
             <div className="tdl-hero-edition">
-              <span className="tdl-hero-edition-num">No. 001</span>
+              {editionNumber && (
+                <span className="tdl-hero-edition-num">
+                  No. {String(editionNumber).padStart(3, '0')}
+                </span>
+              )}
               <span className="tdl-hero-edition-date">{dateStr}</span>
             </div>
           </div>
