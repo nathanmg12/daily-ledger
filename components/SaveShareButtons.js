@@ -68,60 +68,67 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
     setShowSheet(true)
   }
 
+  // Renders a format to a PNG. scale 2 is the shareable asset (540x960 becomes
+  // 1080x1920); scale 1 is used for the link preview, where the Landscape
+  // template is already exactly the 1200x630 Open Graph size.
+  async function renderBlob(style, scale = 2) {
+    // Hand the offscreen template the card and format, then wait a frame for
+    // it to mount before capturing.
+    window.dispatchEvent(new CustomEvent('tdl-share', { detail: { card, style } }))
+    await new Promise((resolve) => setTimeout(resolve, 120))
+
+    const container = document.getElementById('share-template-root')
+    if (!container) throw new Error('Share template not found')
+
+    container.style.visibility = 'visible'
+
+    const dims = DIMENSIONS[style] || DIMENSIONS.stack
+
+    // Backstop for a card that still overflows its frame despite the budget.
+    const cardEl = container.querySelector('[data-share-card]')
+    const innerEl = container.querySelector('[data-share-inner]')
+    let fadeEl = null
+    const fadeRgb = FADE_BG[style]
+
+    if (fadeRgb && cardEl && innerEl && innerEl.scrollHeight > cardEl.clientHeight) {
+      fadeEl = document.createElement('div')
+      fadeEl.style.cssText = [
+        'position:absolute', 'bottom:0', 'left:0', 'right:0', 'height:80px',
+        `background:linear-gradient(to bottom, rgba(${fadeRgb},0) 0%, rgba(${fadeRgb},0.85) 40%, rgba(${fadeRgb},1) 100%)`,
+        'display:flex', 'align-items:flex-end', 'justify-content:center',
+        'padding:0 22px 14px', 'pointer-events:none',
+      ].join(';')
+      fadeEl.innerHTML = '<span style="font-size:20px;color:#9a9088;letter-spacing:0.15em;line-height:1;">···</span>'
+      if (getComputedStyle(cardEl).position === 'static') cardEl.style.position = 'relative'
+      cardEl.appendChild(fadeEl)
+    }
+
+    const blob = await domtoimage.toBlob(container, {
+      width: dims.width,
+      height: dims.height,
+      style: { transform: 'none' },
+      scale,
+      skipFonts: true,
+      ignoreCSSRuleErrors: true,
+      // Omitting bgcolor keeps the alpha channel, which is what makes the
+      // Sticker and Circle formats droppable onto any background.
+      ...(dims.transparent ? {} : { bgcolor: undefined }),
+      filter: (node) => {
+        if (node.tagName === 'LINK' && node.href?.includes('fonts.googleapis.com')) return false
+        return true
+      },
+    })
+
+    container.style.visibility = 'hidden'
+    if (fadeEl) fadeEl.remove()
+
+    return blob
+  }
+
   async function generateAndShare(style) {
     setSharing(true)
-
     try {
-      // Hand the offscreen template the card and format, then wait a frame for
-      // it to mount before capturing.
-      window.dispatchEvent(new CustomEvent('tdl-share', { detail: { card, style } }))
-      await new Promise((resolve) => setTimeout(resolve, 120))
-
-      const container = document.getElementById('share-template-root')
-      if (!container) throw new Error('Share template not found')
-
-      container.style.visibility = 'visible'
-
-      const dims = DIMENSIONS[style] || DIMENSIONS.stack
-
-      // Backstop for a card that still overflows its frame despite the budget.
-      const cardEl = container.querySelector('[data-share-card]')
-      const innerEl = container.querySelector('[data-share-inner]')
-      let fadeEl = null
-      const fadeRgb = FADE_BG[style]
-
-      if (fadeRgb && cardEl && innerEl && innerEl.scrollHeight > cardEl.clientHeight) {
-        fadeEl = document.createElement('div')
-        fadeEl.style.cssText = [
-          'position:absolute', 'bottom:0', 'left:0', 'right:0', 'height:80px',
-          `background:linear-gradient(to bottom, rgba(${fadeRgb},0) 0%, rgba(${fadeRgb},0.85) 40%, rgba(${fadeRgb},1) 100%)`,
-          'display:flex', 'align-items:flex-end', 'justify-content:center',
-          'padding:0 22px 14px', 'pointer-events:none',
-        ].join(';')
-        fadeEl.innerHTML = '<span style="font-size:20px;color:#9a9088;letter-spacing:0.15em;line-height:1;">···</span>'
-        if (getComputedStyle(cardEl).position === 'static') cardEl.style.position = 'relative'
-        cardEl.appendChild(fadeEl)
-      }
-
-      const blob = await domtoimage.toBlob(container, {
-        width: dims.width,
-        height: dims.height,
-        style: { transform: 'none' },
-        scale: 2,
-        skipFonts: true,
-        ignoreCSSRuleErrors: true,
-        // Omitting bgcolor keeps the alpha channel, which is what makes the
-        // Sticker and Circle formats droppable onto any background.
-        ...(dims.transparent ? {} : { bgcolor: undefined }),
-        filter: (node) => {
-          if (node.tagName === 'LINK' && node.href?.includes('fonts.googleapis.com')) return false
-          return true
-        },
-      })
-
-      container.style.visibility = 'hidden'
-      if (fadeEl) fadeEl.remove()
-
+      const blob = await renderBlob(style, 2)
       const file = new File([blob], `tdl-${style}.png`, { type: 'image/png' })
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -155,11 +162,20 @@ export default function SaveShareButtons({ card, savedCardIds, userId, onUnsave 
     if (linkState === 'copying') return
     setLinkState('copying')
     try {
-      const res = await fetch('/api/share-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cardId: card.id }),
-      })
+      // Render the preview before asking for the slug, so the image is already
+      // stored by the time the caller has a URL to paste. A failed render is
+      // survivable — the link still works, it just falls back to the site-wide
+      // Open Graph image.
+      const form = new FormData()
+      form.append('card_id', card.id)
+      try {
+        const preview = await renderBlob('landscape', 1)
+        form.append('preview', preview, `${card.id}.png`)
+      } catch (err) {
+        console.error('Preview render failed, continuing without it:', err)
+      }
+
+      const res = await fetch('/api/share-link', { method: 'POST', body: form })
       if (!res.ok) throw new Error('share-link failed')
       const { slug } = await res.json()
       const url = `${window.location.origin}/share/${slug}`

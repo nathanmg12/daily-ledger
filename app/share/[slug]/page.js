@@ -199,6 +199,69 @@ function SharedCard({ type, content: c }) {
   return null
 }
 
+// Without this every shared card inherited the site-wide Open Graph block, so
+// a scripture, a food spotlight and a Buffett fact all unfurled as the same
+// generic card. The image is the Landscape render stored when the link was
+// created; links made before that shipped fall back to the site default.
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+  const service = getServiceClient()
+
+  const { data: shareRow } = await service
+    .from('shared_cards')
+    .select('card_id, og_image_url')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (!shareRow) return {}
+
+  const { data: card } = await service
+    .from('cards')
+    .select('type, content')
+    .eq('id', shareRow.card_id)
+    .maybeSingle()
+
+  if (!card) return {}
+
+  const c = card.content || {}
+  const label = TYPE_LABELS[card.type] || 'The Daily Ledger'
+
+  // Lead with the words themselves for a quotation, and with the subject for
+  // everything else — that is what makes someone tap.
+  const quotation = c.verse || c.quote
+  const title = quotation
+    ? `“${quotation.length > 90 ? `${quotation.slice(0, 90).trimEnd()}…` : quotation}”`
+    : c.name || c.title || label
+
+  const description =
+    c.bottom_line || c.takeaway || c.how_to_start || c.fact ||
+    [c.author, c.reference, c.journal].filter(Boolean).join(' · ') ||
+    'A finite daily read with no algorithm, no ads, and no opinions.'
+
+  const images = shareRow.og_image_url
+    ? [{ url: shareRow.og_image_url, width: 1200, height: 630, alt: title }]
+    : undefined
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `/share/${slug}`,
+      siteName: 'The Daily Ledger',
+      type: 'article',
+      ...(images ? { images } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(images ? { images: [shareRow.og_image_url] } : {}),
+    },
+  }
+}
+
 export default async function SharePage({ params }) {
   const { slug } = await params
   const service = getServiceClient()
