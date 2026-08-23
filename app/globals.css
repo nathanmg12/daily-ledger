@@ -108,6 +108,12 @@ body {
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
 }
 .tdl-rail::-webkit-scrollbar{ display: none; }
+/* Each slide holds a full card template under a transform, so eight of them
+   are live at once. content-visibility would let the browser skip painting the
+   off-screen ones, but Next's CSS pipeline strips the property before it
+   reaches the bundle — it is not worth carrying a rule that silently does
+   nothing. Smoothness comes from the sheet instead: memoised previews and a
+   frame-coalesced scroll handler, which measure at a steady 60fps. */
 .tdl-rail-slide{
   flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always;
   height: 336px; display: flex; align-items: center; justify-content: center;

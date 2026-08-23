@@ -47,9 +47,19 @@ const HAIRLINE  = 'rgba(0,0,0,0.07)'
 const AMBER     = '#b5823a'
 
 // Full wordmark, matching the app hero: Ledger italic in amber.
+//
+// nowrap is load-bearing. The lockup is two faces — roman for "The Daily",
+// italic for "Ledger" — and dom-to-image exports with skipFonts, so whichever
+// faces happen to be loaded decides the measured width. If the italic resolves
+// wider than the roman fallback the span can break, dropping "Ledger" onto a
+// second line where it collides with the url beneath it. It is a wordmark; it
+// should never break regardless of which face wins.
 function Wordmark({ size }) {
   return (
-    <span style={{ ...serif, fontSize: size, color: INK, letterSpacing: '0.02em' }}>
+    <span style={{
+      ...serif, fontSize: size, color: INK, letterSpacing: '0.02em',
+      whiteSpace: 'nowrap', display: 'inline-block', lineHeight: 1.25,
+    }}>
       The Daily <em style={{ fontStyle: 'italic', color: AMBER }}>Ledger</em>
     </span>
   )
@@ -89,13 +99,14 @@ function FooterStack() {
   )
 }
 
+// Wordmark only. The mockups carried an edition line under this, but that
+// belongs to the Edition format, which shares a day. A single card has no
+// edition, and repeating the wordmark in mono underneath it — which is what
+// this did — just said the same thing twice.
 function Masthead({ size = 25 }) {
   return (
     <div style={{ textAlign: 'center' }}>
       <Wordmark size={size} />
-      <div style={{ ...mono, fontSize: 11, color: MUTED, letterSpacing: '0.08em', marginTop: 7 }}>
-        THE DAILY LEDGER
-      </div>
     </div>
   )
 }

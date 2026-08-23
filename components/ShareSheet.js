@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import ShareTemplate from '@/components/ShareTemplate'
 import { CIRCLE_TYPES } from '@/components/shareFields'
 
@@ -27,7 +27,11 @@ export function formatsForCard(card) {
 
 const BOX = { w: 292, h: 330 }
 
-function Preview({ card, format }) {
+// Memoised because scrolling updates the active index on the parent, and
+// without this every scroll frame re-rendered all eight previews — each one a
+// full card template under a transform. The previews never change once the
+// card is chosen, so they should never re-render at all.
+const Preview = memo(function Preview({ card, format }) {
   if (format.id === 'link') return <LinkPreview card={card} />
 
   const scale = Math.min(BOX.w / format.w, BOX.h / format.h)
@@ -47,7 +51,7 @@ function Preview({ card, format }) {
       </div>
     </div>
   )
-}
+})
 
 // Shows what a pasted link actually looks like, using the same Landscape
 // layout that gets stored as the card's preview image.
@@ -104,19 +108,41 @@ export default function ShareSheet({ card, onClose, onExport, onCopyLink, busy, 
     if (active) window.localStorage.setItem(LAST_FORMAT_KEY, active.id)
   }, [active])
 
-  function goTo(i) {
-    const rail = railRef.current
-    const next = Math.max(0, Math.min(formats.length - 1, i))
-    setIndex(next)
-    rail?.scrollTo({ left: rail.clientWidth * next, behavior: 'smooth' })
-  }
+  // Arrow presses target a running index rather than the one derived from
+  // scroll position. Pressing quickly used to queue smooth scrolls that each
+  // started from wherever the previous one had reached, so presses were
+  // swallowed and the rail appeared to stall.
+  const targetRef = useRef(index)
 
-  function onScroll() {
+  const goTo = useCallback((i) => {
     const rail = railRef.current
-    if (!rail || !rail.clientWidth) return
-    const i = Math.round(rail.scrollLeft / rail.clientWidth)
-    if (i !== index) setIndex(i)
-  }
+    if (!rail) return
+    const next = Math.max(0, Math.min(formats.length - 1, i))
+    targetRef.current = next
+    setIndex(next)
+    rail.scrollTo({ left: rail.clientWidth * next, behavior: 'smooth' })
+  }, [formats.length])
+
+  const step = useCallback((delta) => goTo(targetRef.current + delta), [goTo])
+
+  // Coalesce to one read per frame. Scroll fires far more often than the
+  // active slide can actually change, and each state update re-runs the sheet.
+  const frameRef = useRef(null)
+  const onScroll = useCallback(() => {
+    if (frameRef.current !== null) return
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null
+      const rail = railRef.current
+      if (!rail || !rail.clientWidth) return
+      const i = Math.round(rail.scrollLeft / rail.clientWidth)
+      targetRef.current = i
+      setIndex((prev) => (prev === i ? prev : i))
+    })
+  }, [])
+
+  useEffect(() => () => {
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
+  }, [])
 
   const isLink = active?.id === 'link'
   const linkLabel = { idle: 'Copy link', copying: 'Copying…', copied: '✓ Link copied', error: 'Failed — try again' }[linkState]
@@ -133,11 +159,11 @@ export default function ShareSheet({ card, onClose, onExport, onCopyLink, busy, 
 
         <div className="tdl-rail-wrap">
           <button
-            className="tdl-rail-arrow left" onClick={() => goTo(index - 1)}
+            className="tdl-rail-arrow left" onClick={() => step(-1)}
             disabled={index === 0} aria-label="Previous format"
           >‹</button>
           <button
-            className="tdl-rail-arrow right" onClick={() => goTo(index + 1)}
+            className="tdl-rail-arrow right" onClick={() => step(1)}
             disabled={index === formats.length - 1} aria-label="Next format"
           >›</button>
 
