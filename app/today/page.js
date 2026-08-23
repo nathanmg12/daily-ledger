@@ -7,8 +7,8 @@ import SaveShareButtons from '@/components/SaveShareButtons'
 import PushNotificationPrompt from '@/components/PushNotificationPrompt'
 import AddToHomeScreenPrompt from '@/components/AddToHomeScreenPrompt'
 import ReadingProgress from '@/components/ReadingProgress'
-import LedgerFeed, { groupCardsByType } from '@/components/LedgerFeed'
-import { getEditionNumber, getLatestFeed } from '@/lib/ledger'
+import LedgerFeed from '@/components/LedgerFeed'
+import { groupCardsByType, getEditionNumber, getLatestFeed } from '@/lib/ledger'
 
 async function getUserTopicCount(supabase, userId) {
   const { data, error } = await supabase

@@ -4,9 +4,10 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Nav from '@/components/Nav'
 import ReadingProgress from '@/components/ReadingProgress'
-import LedgerFeed, { groupCardsByType } from '@/components/LedgerFeed'
+import LedgerFeed from '@/components/LedgerFeed'
 import {
-  ARCHIVE_DAYS, formatLedgerDate, getEditionNumber, getFeedForDate, toDateString,
+  ARCHIVE_DAYS, formatLedgerDate, getEditionNumber, getFeedForDate,
+  groupCardsByType, toDateString,
 } from '@/lib/ledger'
 
 export const metadata = { title: 'Past ledger' }
