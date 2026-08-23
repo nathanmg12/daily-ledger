@@ -116,3 +116,68 @@ export function cardFields(card) {
 export function isQuotation(card) {
   return card?.type === 'scripture' || card?.type === 'quote'
 }
+
+// Types with a handle short enough to sit in an index, best first. Quick facts
+// are absent because they have no handle — they carry a question instead, which
+// the Edition uses as a headline.
+const NAMEABLE = ['food_spotlight', 'protocol', 'book_summary', 'research', 'scripture', 'quote']
+
+function handleFor(card) {
+  const c = card?.content || {}
+  const raw =
+    card?.type === 'book_summary' || card?.type === 'research' ? c.title
+    : card?.type === 'scripture' ? c.reference
+    : card?.type === 'quote' ? c.author
+    : c.name
+  if (typeof raw !== 'string') return null
+  const short = raw.split(':')[0].replace(/\s*\([^)]*\)\s*/g, ' ').trim()
+  return short.length ? short : null
+}
+
+// The Edition shares a day, not a card, so it takes the whole feed.
+//
+// It leads with a quote or scripture because those are the only two types
+// short enough to set as a display element — anything else needs a summary
+// line under it, which reads as a caption rather than a headline. Beneath it
+// the index does two jobs at once: named cards show the shape of a day, and
+// quick-fact questions give a reason to open it. Those questions are already
+// written as questions, so they behave like headlines with no rewriting.
+export function editionFields(cards, { named = 3, headlines = 2 } = {}) {
+  const list = Array.isArray(cards) ? cards.filter(Boolean) : []
+
+  const lead =
+    list.find((c) => c.type === 'quote') ||
+    list.find((c) => c.type === 'scripture') ||
+    list.find((c) => c.type === 'food_spotlight') ||
+    list[0] || null
+
+  const namedCards = []
+  for (const type of NAMEABLE) {
+    for (const card of list) {
+      if (card === lead || card.type !== type) continue
+      const handle = handleFor(card)
+      if (!handle || namedCards.some((n) => n.handle === handle)) continue
+      namedCards.push({ type: card.type, handle })
+      break // one per type, so the index shows range rather than repetition
+    }
+    if (namedCards.length >= named) break
+  }
+
+  const questions = list
+    .filter((c) => c.type === 'quick_facts')
+    .map((c) => c.content?.search_prompt)
+    .filter((q) => typeof q === 'string' && q.trim().length)
+    .map((q) => q.trim())
+    .sort((a, b) => a.length - b.length)
+    .slice(0, headlines)
+
+  const shown = (lead ? 1 : 0) + namedCards.length + questions.length
+
+  return {
+    lead,
+    named: namedCards.slice(0, named),
+    questions,
+    total: list.length,
+    remaining: Math.max(0, list.length - shown),
+  }
+}

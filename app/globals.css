@@ -70,6 +70,79 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* End of ledger ---------------------------------------------------------- */
+
+.tdl-end {
+  padding-top: 2.5rem;
+  text-align: center;
+}
+
+.tdl-end-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-bottom: 1.4rem;
+}
+
+.tdl-end-rule::before,
+.tdl-end-rule::after {
+  content: '';
+  height: 0.5px;
+  width: 44px;
+  background: var(--border-med);
+}
+
+.tdl-end-mark {
+  color: var(--accent);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.tdl-end-title {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--text);
+  margin-bottom: 0.45rem;
+}
+
+.tdl-end-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tdl-end-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 260px;
+  margin: 1.75rem auto 0;
+}
+
+.tdl-end-btn {
+  height: 44px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 14.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.tdl-end-btn.primary { background: var(--text); color: var(--surface); }
+.tdl-end-btn.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 0.5px solid var(--border-med);
+}
+.tdl-end-btn:disabled { opacity: 0.55; cursor: wait; }
+
 /* Share sheet ------------------------------------------------------------ */
 
 .tdl-sheet-scrim{

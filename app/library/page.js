@@ -26,9 +26,23 @@ export default async function LibraryPage() {
           <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(26px, 5vw, 38px)', fontWeight: 400, marginBottom: '0.4rem' }}>
             Your <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Library</em>
           </h1>
-          <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
-            {cards.length} saved card{cards.length !== 1 ? 's' : ''}
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
+            <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+              {cards.length} saved card{cards.length !== 1 ? 's' : ''}
+            </p>
+            {/* Library is what you kept, the archive is what you were sent —
+                siblings, so the archive lives here rather than taking a fourth
+                slot in the nav and pulling attention away from today. */}
+            <a
+              href="/ledger"
+              style={{
+                fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '0.06em',
+                color: 'var(--accent)', textDecoration: 'none',
+              }}
+            >
+              Past ledgers →
+            </a>
+          </div>
         </div>
 
         {cards.length === 0 ? (
