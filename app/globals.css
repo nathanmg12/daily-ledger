@@ -70,6 +70,87 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Share sheet ------------------------------------------------------------ */
+
+.tdl-sheet-scrim{
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20,17,14,.42);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+
+.tdl-sheet{
+  width: 100%; max-width: 460px;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 34px rgba(0,0,0,.18);
+  display: flex; flex-direction: column;
+  animation: tdl-sheet-up .26s cubic-bezier(.22,.61,.36,1);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@keyframes tdl-sheet-up { from { transform: translateY(14px); opacity: 0 } to { transform: none; opacity: 1 } }
+@media (prefers-reduced-motion: reduce){ .tdl-sheet{ animation: none } }
+
+.tdl-sheet-grab{ width: 38px; height: 4px; border-radius: 2px; background: var(--border-med); margin: 10px auto 0; }
+
+.tdl-sheet-head{ display: flex; align-items: baseline; justify-content: space-between; padding: 14px 20px 0; }
+.tdl-sheet-title{ font-family: var(--serif); font-size: 19px; color: var(--text); }
+.tdl-sheet-close{
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--text-muted);
+  background: none; border: 0; cursor: pointer; padding: 4px;
+}
+
+.tdl-rail-wrap{ position: relative; padding-top: 14px; }
+
+/* Scroll position is the source of truth, so native touch swipe and the
+   arrows can't disagree about which format is showing. */
+.tdl-rail{
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.tdl-rail::-webkit-scrollbar{ display: none; }
+.tdl-rail-slide{
+  flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always;
+  height: 336px; display: flex; align-items: center; justify-content: center;
+}
+
+.tdl-rail-arrow{
+  position: absolute; top: calc(50% - 16px); width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface); border: .5px solid var(--border-med); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); font-size: 15px; line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,.10); z-index: 5;
+}
+.tdl-rail-arrow.left{ left: 10px } .tdl-rail-arrow.right{ right: 10px }
+.tdl-rail-arrow:disabled{ opacity: .28; cursor: default; }
+
+.tdl-fmt{ text-align: center; padding: 6px 20px 0; }
+.tdl-fmt-name{ font-family: var(--serif); font-size: 16px; color: var(--text); }
+.tdl-fmt-note{ font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; color: var(--text-muted); margin-top: 3px; }
+
+.tdl-dots{ display: flex; gap: 6px; justify-content: center; padding: 12px 0 4px; flex-wrap: wrap; }
+.tdl-dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--border-med); border: 0; padding: 0; cursor: pointer; }
+.tdl-dot.on{ background: var(--accent); width: 18px; border-radius: 3px; }
+
+.tdl-sheet-actions{ padding: 10px 20px 22px; }
+.tdl-btn{
+  height: 46px; width: 100%; border-radius: 10px; border: 0; cursor: pointer;
+  font-family: var(--sans); font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+}
+.tdl-btn.primary{ background: var(--text); color: var(--surface); }
+.tdl-btn:disabled{ opacity: .55; cursor: wait; }
+
+/* Checkerboard behind transparent formats so the alpha is legible. */
+.tdl-alpha{
+  background-image:
+    linear-gradient(45deg, rgba(128,128,128,.20) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(128,128,128,.20) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(128,128,128,.20) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(128,128,128,.20) 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+}
+
 /* Scroll reveal ---------------------------------------------------------- */
 /* Global rather than page-scoped: FadeIn is used on the landing page and the
    library as well as the daily ledger. */

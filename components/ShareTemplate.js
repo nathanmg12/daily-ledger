@@ -1,35 +1,6 @@
 'use client'
 
-const ACCENT = {
-  scripture:      { color: '#8a6a20', bg: 'rgba(138,106,32,0.08)',  border: 'rgba(138,106,32,0.2)',  leftColor: '#8a6a20' },
-  quote:          { color: '#b5823a', bg: 'rgba(181,130,58,0.08)',  border: 'rgba(181,130,58,0.2)',  leftColor: '#b5823a' },
-  quick_facts:    { color: '#2a8a6e', bg: 'rgba(42,138,110,0.08)',  border: 'rgba(42,138,110,0.2)',  leftColor: '#2a8a6e' },
-  book_summary:   { color: '#6b52a8', bg: 'rgba(107,82,168,0.08)', border: 'rgba(107,82,168,0.2)', leftColor: '#6b52a8' },
-  food_spotlight: { color: '#a07030', bg: 'rgba(160,112,48,0.08)', border: 'rgba(160,112,48,0.2)', leftColor: '#a07030' },
-  research:       { color: '#2e6da4', bg: 'rgba(46,109,164,0.08)',  border: 'rgba(46,109,164,0.2)',  leftColor: '#2e6da4' },
-  protocol:       { color: '#3a7a3a', bg: 'rgba(58,122,58,0.08)',   border: 'rgba(58,122,58,0.2)',   leftColor: '#3a7a3a' },
-}
-
-// Back card colors — pick two that contrast with the front card type
-const BACK_COLORS = {
-  scripture:      ['#2e6da4', '#2a8a6e'],
-  quote:          ['#3a7a3a', '#6b52a8'],
-  quick_facts:    ['#6b52a8', '#2e6da4'],
-  book_summary:   ['#2a8a6e', '#b85c45'],
-  food_spotlight: ['#3a7a3a', '#2e6da4'],
-  research:       ['#3a7a3a', '#6b52a8'],
-  protocol:       ['#2e6da4', '#b85c45'],
-}
-
-const TYPE_LABELS = {
-  scripture: 'Scripture', quote: 'Quote', quick_facts: 'Quick Fact',
-  book_summary: 'Book Summary', food_spotlight: 'Food Spotlight',
-  research: 'Research', protocol: 'Protocol',
-}
-
-// Types with structured fields worth pulling out (specs/badges/ideas)
-// rather than flattening to prose.
-const RICH_TYPES = new Set(['protocol', 'food_spotlight', 'book_summary', 'research'])
+import { ACCENT, BACK_COLORS, TYPE_LABELS, cardFields, isQuotation } from './shareFields'
 
 const FONT_CSS = `
   @font-face {
@@ -58,74 +29,44 @@ const FONT_CSS = `
   }
 `
 
+// The TDL monogram already sets its L in italic amber, so it carries the
+// masthead treatment on its own wherever the layout is too tight for the
+// full wordmark.
+const LOGO_SRC = '/images/tdl-logo-mono.png'
+
 const serif = { fontFamily: "'Playfair Display', Georgia, serif" }
 const mono  = { fontFamily: "'DM Mono', monospace" }
 const sans  = { fontFamily: "'DM Sans', system-ui, sans-serif", fontWeight: 300 }
 
-// Logo lives at /public/images/tdl-logo-mono.png — see build notes.
-const LOGO_SRC = '/images/tdl-logo-mono.png'
+const CANVAS_BG = '#f0ede8'
+const SURFACE   = '#faf9f7'
+const INK       = '#1c1814'
+const INK_2     = '#4a453e'
+const MUTED     = '#9a9088'
+const HAIRLINE  = 'rgba(0,0,0,0.07)'
+const AMBER     = '#b5823a'
 
-function Eyebrow({ color, children, style }) {
+// Full wordmark, matching the app hero: Ledger italic in amber.
+function Wordmark({ size }) {
   return (
-    <div style={{ ...mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color, marginBottom: 10, ...style }}>
-      {children}
-    </div>
-  )
-}
-
-// Small stat block used in specs grids (protocol timing/duration/cost,
-// food type/human_use/key_compounds).
-function SpecGrid({ specs, accentColor }) {
-  const entries = Object.entries(specs || {})
-  if (!entries.length) return null
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${entries.length}, 1fr)`, gap: 8, marginBottom: 12 }}>
-      {entries.map(([k, v]) => (
-        <div key={k} style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 6, padding: '8px 6px', textAlign: 'center' }}>
-          <div style={{ ...mono, fontSize: 8.5, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#9a9088', marginBottom: 3 }}>
-            {k.replace(/_/g, ' ')}
-          </div>
-          <div style={{ fontSize: 12, color: '#1c1814', fontWeight: 500, lineHeight: 1.25 }}>{v}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function Badge({ children, color, bg, border }) {
-  return (
-    <span style={{
-      ...mono, display: 'inline-block', fontSize: 10, letterSpacing: '0.05em',
-      textTransform: 'uppercase', borderRadius: 4, padding: '3px 8px',
-      color, background: bg, border: `0.5px solid ${border}`,
-    }}>
-      {children}
+    <span style={{ ...serif, fontSize: size, color: INK, letterSpacing: '0.02em' }}>
+      The Daily <em style={{ fontStyle: 'italic', color: AMBER }}>Ledger</em>
     </span>
   )
 }
 
-function Footer({ vertical = false }) {
-  if (vertical) {
-    // Used by Story — centered, stacked logo + wordmark + url
-    return (
-      <div style={{ flexShrink: 0, padding: '0 24px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <img src={LOGO_SRC} alt="" style={{ height: 26, width: 'auto', opacity: 0.92 }} />
-        <div style={{ ...mono, fontSize: 11, color: '#9a9088', letterSpacing: '0.08em' }}>
-          thedailyledger.app
-        </div>
-      </div>
-    )
-  }
+// Compact footer: monogram left, url right, under a fading amber rule.
+function FooterRow() {
   return (
     <div style={{ flexShrink: 0, padding: '0 24px 20px' }}>
       <div style={{
         height: 1,
-        background: 'linear-gradient(to right, rgba(181,130,58,0.55), rgba(181,130,58,0.08))',
+        background: `linear-gradient(to right, rgba(181,130,58,0.55), rgba(181,130,58,0.08))`,
         marginBottom: 12,
       }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <img src={LOGO_SRC} alt="The Daily Ledger" style={{ height: 22, width: 'auto' }} />
-        <div style={{ ...mono, fontSize: 9, color: '#9a9088', letterSpacing: '0.1em' }}>
+        <div style={{ ...mono, fontSize: 9, color: MUTED, letterSpacing: '0.1em' }}>
           thedailyledger.app
         </div>
       </div>
@@ -133,475 +74,387 @@ function Footer({ vertical = false }) {
   )
 }
 
-// ── STACK / full card content ─────────────────────────────────
-// Used by StackTemplate. Book summary already surfaces its full idea
-// list; protocol and food spotlight get specs + badges added here so
-// they're not just a name and one paragraph.
-function CardContent({ card }) {
-  const c = card.content
+// Tall formats have room for the full wordmark, so they get it.
+function FooterStack() {
+  return (
+    <div style={{
+      flexShrink: 0, padding: '0 24px 28px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+    }}>
+      <Wordmark size={17} />
+      <div style={{ ...mono, fontSize: 11, color: MUTED, letterSpacing: '0.08em' }}>
+        thedailyledger.app
+      </div>
+    </div>
+  )
+}
+
+function Masthead({ size = 25 }) {
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <Wordmark size={size} />
+      <div style={{ ...mono, fontSize: 11, color: MUTED, letterSpacing: '0.08em', marginTop: 7 }}>
+        THE DAILY LEDGER
+      </div>
+    </div>
+  )
+}
+
+// Renders whichever budgeted fields a card has, at the sizes a format asks for.
+// Every template shares this, so the fields shown never drift between formats.
+function Fields({ card, e = 13, k = 25.5, b = 17, align = 'left' }) {
   const a = ACCENT[card.type] || ACCENT.quote
+  const f = cardFields(card)
+  const quoting = isQuotation(card)
 
   return (
-    <div data-share-inner>
-      <Eyebrow color={a.color}>{TYPE_LABELS[card.type]}</Eyebrow>
+    <div data-share-inner style={{ textAlign: align }}>
+      <div style={{
+        ...mono, fontSize: e, letterSpacing: '0.14em', textTransform: 'uppercase',
+        color: a.color, marginBottom: 9,
+      }}>
+        {TYPE_LABELS[card.type]}
+      </div>
 
-      {card.type === 'scripture' && (
-        <>
-          <div style={{ ...serif, fontSize: 22, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.55, marginBottom: 10 }}>
-            &ldquo;{c.verse}&rdquo;
-          </div>
-          <div style={{ ...mono, fontSize: 13, color: a.color, marginBottom: 12 }}>
-            {c.reference} · {c.translation}
-          </div>
-          <div style={{ ...sans, fontSize: 16, color: '#4a453e', lineHeight: 1.7 }}>{c.context}</div>
-        </>
+      {f.kicker && (
+        <div style={{ ...serif, fontSize: k, color: INK, lineHeight: 1.16, marginBottom: 7 }}>
+          {f.kicker}
+        </div>
       )}
 
-      {card.type === 'quote' && (
-        <>
-          <div style={{ ...serif, fontSize: 22, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.55, marginBottom: 10 }}>
-            &ldquo;{c.quote}&rdquo;
-          </div>
-          <div style={{ ...mono, fontSize: 13, color: a.color, marginBottom: 12 }}>
-            — {c.author}{c.source ? ` · ${c.source}` : ''}
-          </div>
-          <div style={{ ...sans, fontSize: 16, color: '#4a453e', lineHeight: 1.7 }}>{c.context}</div>
-        </>
+      {f.idea && (
+        <div style={{ ...sans, fontWeight: 500, fontSize: b * 1.05, color: INK, lineHeight: 1.4, marginBottom: 6 }}>
+          {f.idea}
+        </div>
       )}
 
-      {card.type === 'quick_facts' && (
-        <div style={{ ...sans, fontSize: 20, color: '#1c1814', lineHeight: 1.7 }}>{c.fact}</div>
-      )}
-
-      {card.type === 'book_summary' && (
-        <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, paddingBottom: 14, borderBottom: '0.5px solid rgba(0,0,0,0.07)' }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: 6, background: a.bg,
-              border: '0.5px solid rgba(0,0,0,0.12)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0,
+      {f.badges?.length > 0 && (
+        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9, justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
+          {f.badges.map((badge) => (
+            <span key={badge} style={{
+              ...mono, fontSize: e * 0.78, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: a.color, border: `0.5px solid ${a.color}`, borderRadius: 3, padding: '2.5px 6px',
             }}>
-              {c.cover_emoji || '📚'}
-            </div>
-            <div>
-              <div style={{ ...serif, fontSize: 18, color: '#1c1814', lineHeight: 1.3 }}>{c.title}</div>
-              <div style={{ ...mono, fontSize: 12, color: '#9a9088', marginTop: 3 }}>{c.author}</div>
-            </div>
-          </div>
-          <div style={{ ...mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a9088', marginBottom: 12 }}>
-            {c.ideas?.length} ideas from this book
-          </div>
-          {c.ideas?.map((idea, i) => (
-            <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ ...mono, fontSize: 12, color: a.color, marginBottom: 3 }}>{String(i + 1).padStart(2, '0')} /</div>
-              <div style={{ fontSize: 15, fontWeight: 500, color: '#1c1814', lineHeight: 1.4, marginBottom: 4 }}>{idea.title}</div>
-              <div style={{ ...sans, fontSize: 14, color: '#4a453e', lineHeight: 1.65 }}>{idea.body}</div>
-            </div>
+              {badge}
+            </span>
           ))}
-        </>
+        </div>
       )}
 
-      {card.type === 'food_spotlight' && (
-        <>
-          <div style={{ ...serif, fontSize: 24, color: '#1c1814', marginBottom: 6 }}>{c.name}</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-            {(c.badges || []).map((b) => (
-              <Badge key={b} color={a.color} bg={a.bg} border={a.border}>{b}</Badge>
-            ))}
-          </div>
-          <SpecGrid specs={c.specs} accentColor={a.color} />
-          <div style={{ ...mono, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9a9088', marginBottom: 4 }}>Overview</div>
-          <div style={{ ...sans, fontSize: 15, color: '#4a453e', lineHeight: 1.6, marginBottom: 12 }}>{c.intro}</div>
-          {c.bottom_line && (
-            <div style={{ ...sans, fontSize: 14, color: '#4a453e', lineHeight: 1.6, borderLeft: `2px solid ${a.border}`, paddingLeft: 12, fontStyle: 'italic' }}>
-              {c.bottom_line}
-            </div>
-          )}
-        </>
+      {f.quotation && (
+        <div style={{ ...serif, fontSize: k * 1.06, fontStyle: 'italic', color: INK, lineHeight: 1.45 }}>
+          &ldquo;{f.quotation}&rdquo;
+        </div>
       )}
 
-      {card.type === 'research' && (
-        <>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-            <Badge color={a.color} bg={a.bg} border={a.border}>
-              {c.journal}{c.published_at ? ` · ${c.published_at.slice(0, 4)}` : ''}
-            </Badge>
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 500, color: '#1c1814', lineHeight: 1.4, marginBottom: 10 }}>{c.title}</div>
-          <div style={{ ...mono, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: a.color, marginBottom: 6 }}>TL;DR</div>
-          <div style={{ ...sans, fontSize: 15, color: '#4a453e', lineHeight: 1.7 }}>{c.tldr}</div>
-          {c.takeaway && (
-            <div style={{ ...sans, fontSize: 14, color: '#4a453e', lineHeight: 1.7, marginTop: 12, fontStyle: 'italic', borderLeft: `2px solid ${a.border}`, paddingLeft: 12 }}>
-              {c.takeaway}
-            </div>
-          )}
-        </>
+      {f.body && (
+        <div style={{ ...sans, fontSize: b, color: INK_2, lineHeight: 1.6 }}>
+          {f.body}
+        </div>
       )}
 
-      {card.type === 'protocol' && (
-        <>
-          <div style={{ ...serif, fontSize: 22, color: '#1c1814', marginBottom: 8 }}>{c.name}</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {c.evidence_level && (
-              <Badge color={a.color} bg={a.bg} border={a.border}>{c.evidence_level} evidence</Badge>
-            )}
-            {c.source && (
-              <Badge color="#9a9088" bg="rgba(0,0,0,0.04)" border="rgba(0,0,0,0.1)">{c.source}</Badge>
-            )}
-          </div>
-          <SpecGrid specs={c.specs} accentColor={a.color} />
-          <div style={{ ...sans, fontSize: 15, color: '#4a453e', lineHeight: 1.7 }}>{c.overview}</div>
-          {c.how_to_start && (
-            <div style={{ ...sans, fontSize: 14, color: '#4a453e', lineHeight: 1.7, marginTop: 12, borderLeft: `2px solid ${a.border}`, paddingLeft: 12, fontStyle: 'italic' }}>
-              {c.how_to_start}
-            </div>
-          )}
-        </>
+      {f.attribution && (
+        <div style={{ ...serif, fontSize: k * 0.82, color: INK, lineHeight: 1.2, marginTop: 10 }}>
+          {f.attribution}
+        </div>
+      )}
+
+      {f.meta && (
+        <div style={{
+          ...mono, fontSize: e * 0.9, color: MUTED, letterSpacing: '0.07em',
+          marginTop: f.attribution ? 4 : 9,
+        }}>
+          {f.meta}
+        </div>
       )}
     </div>
   )
 }
 
-// ── STACK TEMPLATE ──────────────────────────────────────────
-function StackTemplate({ card }) {
-  const a = card ? (ACCENT[card.type] || ACCENT.quote) : ACCENT.quote
-  const backs = card ? (BACK_COLORS[card.type] || ['#2e6da4', '#2a8a6e']) : ['#2e6da4', '#2a8a6e']
+// The fanned deck: two colour-blocked cards behind the real one, so the image
+// reads as "one of many" without a word of explanation.
+function Deck({ card, w, h, pad, sizes }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  const backs = BACK_COLORS[card.type] || ['#2e6da4', '#2a8a6e']
+  const s = sizes.scale || 1
 
-  const cardBase = {
-    position: 'absolute',
-    width: 390,
-    height: 310,
-    background: '#faf9f7',
-    borderRadius: 10,
-    border: '0.5px solid rgba(0,0,0,0.07)',
-    transformOrigin: 'center center',
+  const base = {
+    position: 'absolute', width: w, height: h,
+    background: SURFACE, borderRadius: 10 * s,
+    border: `0.5px solid ${HAIRLINE}`, transformOrigin: 'center center',
   }
 
   return (
-    <div
-      id="share-template-root"
-      style={{
-        position: 'fixed', left: -9999, top: 0, visibility: 'hidden',
-        width: 540, height: 540,
-        background: '#f0ede8',
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.09)',
-        display: 'flex', flexDirection: 'column',
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-      }}
-      data-share-style="stack"
-    >
-      <style>{FONT_CSS}</style>
-
-      {/* Stack area — takes up most of the space */}
-      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {/* Back card 1 */}
-        <div style={{
-          ...cardBase,
-          borderLeft: `4px solid ${backs[0]}`,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          transform: 'rotate(-6deg) translate(-30px, 16px)',
-          opacity: 0.5,
-          zIndex: 1,
-        }} />
-        {/* Back card 2 */}
-        <div style={{
-          ...cardBase,
-          borderLeft: `4px solid ${backs[1]}`,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          transform: 'rotate(-2.5deg) translate(-15px, 8px)',
-          opacity: 0.7,
-          zIndex: 2,
-        }} />
-        {/* Front card — centered */}
-        <div
-          data-share-card
-          style={{
-            ...cardBase,
-            borderLeft: `5px solid ${a.leftColor}`,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            transform: 'rotate(1.5deg)',
-            padding: '20px 22px',
-            overflow: 'hidden',
-            zIndex: 3,
-          }}
-        >
-          {card && <CardContent card={card} />}
-        </div>
+    <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{
+        ...base, borderLeft: `${4 * s}px solid ${backs[0]}`,
+        boxShadow: `0 ${2 * s}px ${12 * s}px rgba(0,0,0,0.08)`,
+        transform: `rotate(-6deg) translate(${-30 * s}px, ${16 * s}px)`, opacity: 0.5, zIndex: 1,
+      }} />
+      <div style={{
+        ...base, borderLeft: `${4 * s}px solid ${backs[1]}`,
+        boxShadow: `0 ${2 * s}px ${12 * s}px rgba(0,0,0,0.08)`,
+        transform: `rotate(-2.5deg) translate(${-15 * s}px, ${8 * s}px)`, opacity: 0.7, zIndex: 2,
+      }} />
+      <div
+        data-share-card
+        style={{
+          ...base, borderLeft: `${5 * s}px solid ${a.color}`,
+          boxShadow: `0 ${8 * s}px ${32 * s}px rgba(0,0,0,0.18)`,
+          transform: 'rotate(1.5deg)', padding: pad, overflow: 'hidden', zIndex: 3,
+        }}
+      >
+        <Fields card={card} e={sizes.e} k={sizes.k} b={sizes.b} />
       </div>
-
-      <Footer />
     </div>
   )
 }
 
-// ── POSTER TEMPLATE ─────────────────────────────────────────
-// Lighter touch than Stack by design — Poster's identity is clean
-// text on parchment, so rich types get one or two pulled data points
-// (an evidence badge, a key spec, a takeaway) rather than the full
-// spec grid / idea list Stack shows.
-function PosterTemplate({ card }) {
-  const a = card ? (ACCENT[card.type] || ACCENT.quote) : ACCENT.quote
-  const c = card?.content
+// Two modes. The default renders offscreen under a fixed id, which is what
+// dom-to-image captures. `inline` renders in normal flow with no id, so the
+// share sheet can show several formats at once as live previews — the same
+// components that will be exported, rather than hand-drawn approximations that
+// drift. Only one element may carry the capture id, hence the omission.
+function Root({ width, height, transparent, style, children, name, inline }) {
+  const placement = inline
+    ? { position: 'relative' }
+    : { position: 'fixed', left: -9999, top: 0, visibility: 'hidden' }
 
   return (
     <div
-      id="share-template-root"
+      id={inline ? undefined : 'share-template-root'}
+      data-share-style={name}
       style={{
-        position: 'fixed', left: -9999, top: 0, visibility: 'hidden',
-        width: 540, height: 540,
-        background: '#f0ede8',
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.09)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        padding: '40px 48px 0',
+        ...placement,
+        width, height,
+        background: transparent ? 'transparent' : CANVAS_BG,
+        boxShadow: transparent ? 'none' : 'inset 0 0 0 1px rgba(0,0,0,0.09)',
+        display: 'flex', flexDirection: 'column',
         fontFamily: "'DM Sans', system-ui, sans-serif",
+        ...style,
       }}
-      data-share-style="poster"
     >
       <style>{FONT_CSS}</style>
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }} data-share-card>
-        <div data-share-inner>
-          {/* Eyebrow */}
-          <div style={{ ...mono, fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: a.color, marginBottom: 20 }}>
-            {card ? TYPE_LABELS[card.type] : ''}
-          </div>
-
-          {card?.type === 'scripture' && (
-            <>
-              <div style={{ ...serif, fontSize: 26, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.5, marginBottom: 16 }}>
-                &ldquo;{c.verse}&rdquo;
-              </div>
-              <div style={{ ...mono, fontSize: 13, color: a.color }}>
-                {c.reference} · {c.translation}
-              </div>
-            </>
-          )}
-
-          {card?.type === 'quote' && (
-            <>
-              <div style={{ ...serif, fontSize: 26, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.5, marginBottom: 16 }}>
-                &ldquo;{c.quote}&rdquo;
-              </div>
-              <div style={{ ...mono, fontSize: 13, color: a.color }}>
-                — {c.author}{c.source ? ` · ${c.source}` : ''}
-              </div>
-            </>
-          )}
-
-          {card?.type === 'quick_facts' && (
-            <div style={{ ...sans, fontSize: 24, color: '#1c1814', lineHeight: 1.65, fontWeight: 300 }}>{c.fact}</div>
-          )}
-
-          {card?.type === 'book_summary' && (
-            <>
-              <div style={{ ...serif, fontSize: 24, color: '#1c1814', marginBottom: 4 }}>{c.title}</div>
-              <div style={{ ...mono, fontSize: 12, color: '#9a9088', marginBottom: 20 }}>{c.author}</div>
-              <div style={{ ...mono, fontSize: 12, color: a.color, marginBottom: 6 }}>01 /</div>
-              <div style={{ fontSize: 19, fontWeight: 500, color: '#1c1814', lineHeight: 1.4 }}>{c.ideas?.[0]?.title}</div>
-              {c.ideas?.length > 1 && (
-                <div style={{ ...mono, fontSize: 11, color: '#9a9088', marginTop: 16, letterSpacing: '0.04em' }}>
-                  +{c.ideas.length - 1} more ideas inside
-                </div>
-              )}
-            </>
-          )}
-
-          {card?.type === 'food_spotlight' && (
-            <>
-              <div style={{ ...serif, fontSize: 28, color: '#1c1814', marginBottom: 10 }}>{c.name}</div>
-              {c.badges?.[1] && (
-                <div style={{ marginBottom: 16 }}>
-                  <Badge color={a.color} bg={a.bg} border={a.border}>{c.badges[1]}</Badge>
-                </div>
-              )}
-              <div style={{ ...sans, fontSize: 18, color: '#4a453e', lineHeight: 1.65 }}>
-                {c.bottom_line || c.intro}
-              </div>
-            </>
-          )}
-
-          {card?.type === 'research' && (
-            <>
-              {c.journal && (
-                <div style={{ marginBottom: 12 }}>
-                  <Badge color={a.color} bg={a.bg} border={a.border}>{c.journal}</Badge>
-                </div>
-              )}
-              <div style={{ fontSize: 22, fontWeight: 500, color: '#1c1814', lineHeight: 1.4, marginBottom: 16 }}>{c.title}</div>
-              <div style={{ ...sans, fontSize: 17, color: '#4a453e', lineHeight: 1.7 }}>{c.takeaway || c.tldr}</div>
-            </>
-          )}
-
-          {card?.type === 'protocol' && (
-            <>
-              <div style={{ ...serif, fontSize: 26, color: '#1c1814', marginBottom: 10 }}>{c.name}</div>
-              {c.evidence_level && (
-                <div style={{ marginBottom: 16 }}>
-                  <Badge color={a.color} bg={a.bg} border={a.border}>{c.evidence_level} evidence</Badge>
-                </div>
-              )}
-              <div style={{ ...sans, fontSize: 18, color: '#4a453e', lineHeight: 1.7 }}>{c.overview}</div>
-            </>
-          )}
-        </div>
-      </div>
-
-      <Footer />
+      {children}
     </div>
   )
 }
 
-// ── STORY TEMPLATE ──────────────────────────────────────────
-// 1080x1920 output (540x960 canvas at scale:2). Simple types (quote,
-// scripture, quick_facts) get a centered single block. Rich types get
-// three stacked groups (header / specs-or-ideas / closing line)
-// centered as a unit, matching the approved mockup.
-function StoryTemplate({ card }) {
-  const a = card ? (ACCENT[card.type] || ACCENT.quote) : ACCENT.quote
-  const c = card?.content
-  const isRich = card && RICH_TYPES.has(card.type)
+// ── STACK ───────────────────────────────────────────────────
+function StackTemplate({ card, inline }) {
+  return (
+    <Root width={540} height={540} name="stack" inline={inline}>
+      <Deck card={card} w={414} h={340} pad="22px 24px" sizes={{ scale: 1, e: 14, k: 25.5, b: 17 }} />
+      <FooterRow />
+    </Root>
+  )
+}
+
+// ── POSTER ──────────────────────────────────────────────────
+function PosterTemplate({ card, inline }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  return (
+    <Root width={540} height={540} name="poster" inline={inline} style={{ padding: '52px 48px 0' }}>
+      <div style={{ height: 4, width: 64, background: a.color, marginBottom: 28, flexShrink: 0 }} />
+      <div data-share-card style={{ flex: 1, overflow: 'hidden' }}>
+        <Fields card={card} e={16} k={32} b={18} />
+      </div>
+      <FooterRow />
+    </Root>
+  )
+}
+
+// ── STORY ───────────────────────────────────────────────────
+// A page of the publication rather than type floating in cream: masthead and
+// edition line above, content in the optical middle, wordmark at the foot.
+function StoryTemplate({ card, inline }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  const f = cardFields(card)
+  const quoting = isQuotation(card)
 
   return (
-    <div
-      id="share-template-root"
-      style={{
-        position: 'fixed', left: -9999, top: 0, visibility: 'hidden',
-        width: 540, height: 960,
-        background: '#f0ede8',
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.09)',
-        display: 'flex', flexDirection: 'column',
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-      }}
-      data-share-style="story"
-    >
-      <style>{FONT_CSS}</style>
+    <Root width={540} height={960} name="story" inline={inline} style={{ padding: '0 44px' }}>
+      <div style={{ flexShrink: 0, paddingTop: 52 }}>
+        <Masthead size={25} />
+        <div style={{ height: 0.5, background: 'rgba(0,0,0,0.12)', marginTop: 20 }} />
+      </div>
 
       <div
         data-share-card
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 40px' }}
+        style={{
+          flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          textAlign: 'center', padding: '28px 0', overflow: 'hidden',
+        }}
       >
-        {!isRich && (
-          <div data-share-inner style={{ textAlign: 'center' }}>
-            <Eyebrow color={a.color} style={{ textAlign: 'center' }}>{card ? TYPE_LABELS[card.type] : ''}</Eyebrow>
-
-            {card?.type === 'scripture' && (
-              <>
-                <div style={{ ...serif, fontSize: 32, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.45, marginBottom: 18 }}>
-                  &ldquo;{c.verse}&rdquo;
-                </div>
-                <div style={{ width: 40, height: 2, background: a.color, margin: '0 auto 18px' }} />
-                <div style={{ ...mono, fontSize: 14, color: a.color, letterSpacing: '0.04em' }}>
-                  {c.reference?.toUpperCase()} · {c.translation}
-                </div>
-              </>
-            )}
-
-            {card?.type === 'quote' && (
-              <>
-                <div style={{ ...serif, fontSize: 32, fontStyle: 'italic', color: '#1c1814', lineHeight: 1.45, marginBottom: 18 }}>
-                  &ldquo;{c.quote}&rdquo;
-                </div>
-                <div style={{ width: 40, height: 2, background: a.color, margin: '0 auto 18px' }} />
-                <div style={{ ...mono, fontSize: 14, color: a.color, letterSpacing: '0.04em' }}>
-                  {c.author?.toUpperCase()}
-                </div>
-              </>
-            )}
-
-            {card?.type === 'quick_facts' && (
-              <div style={{ ...serif, fontSize: 27, color: '#1c1814', lineHeight: 1.5 }}>{c.fact}</div>
-            )}
+        <div data-share-inner>
+          <div style={{
+            ...mono, fontSize: 18, letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: a.color, marginBottom: 26,
+          }}>
+            {TYPE_LABELS[card.type]}
           </div>
-        )}
 
-        {isRich && (
-          <div data-share-inner style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-            {/* Top group */}
-            <div>
-              <Eyebrow color={a.color}>{TYPE_LABELS[card.type]}</Eyebrow>
-
-              {card.type === 'protocol' && (
-                <>
-                  <div style={{ ...serif, fontSize: 30, fontWeight: 600, color: '#1c1814', lineHeight: 1.25, marginBottom: 12 }}>{c.name}</div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {c.evidence_level && <Badge color={a.color} bg={a.bg} border={a.border}>{c.evidence_level} evidence</Badge>}
-                    {c.source && <Badge color="#9a9088" bg="rgba(0,0,0,0.04)" border="rgba(0,0,0,0.1)">{c.source}</Badge>}
-                  </div>
-                </>
-              )}
-              {card.type === 'food_spotlight' && (
-                <>
-                  <div style={{ ...serif, fontSize: 30, fontWeight: 600, color: '#1c1814', lineHeight: 1.25, marginBottom: 12 }}>{c.name}</div>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {(c.badges || []).map((b) => <Badge key={b} color={a.color} bg={a.bg} border={a.border}>{b}</Badge>)}
-                  </div>
-                </>
-              )}
-              {card.type === 'book_summary' && (
-                <>
-                  <div style={{ ...serif, fontSize: 30, fontWeight: 600, color: '#1c1814', lineHeight: 1.25, marginBottom: 4 }}>{c.title}</div>
-                  <div style={{ ...mono, fontSize: 13, color: a.color, letterSpacing: '0.04em' }}>{c.author?.toUpperCase()}</div>
-                </>
-              )}
-              {card.type === 'research' && (
-                <>
-                  <div style={{ ...serif, fontSize: 26, fontWeight: 600, color: '#1c1814', lineHeight: 1.3, marginBottom: 12 }}>{c.title}</div>
-                  {c.journal && <Badge color={a.color} bg={a.bg} border={a.border}>{c.journal}</Badge>}
-                </>
-              )}
+          {f.kicker && !quoting && (
+            <div style={{ ...serif, fontSize: 31, color: INK, lineHeight: 1.2, marginBottom: 20 }}>
+              {f.kicker}
             </div>
-
-            {/* Middle group — specs or ideas */}
-            <div>
-              {card.type === 'protocol' && <SpecGrid specs={c.specs} accentColor={a.color} />}
-              {card.type === 'food_spotlight' && <SpecGrid specs={c.specs} accentColor={a.color} />}
-              {card.type === 'book_summary' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  {(c.ideas || []).slice(0, 3).map((idea, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                      <span style={{ ...mono, fontSize: 13, color: a.color, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</span>
-                      <span style={{ fontSize: 16, color: '#1c1814', fontWeight: 500, lineHeight: 1.4 }}>{idea.title}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {card.type === 'research' && (
-                <div style={{ ...sans, fontSize: 16, color: '#4a453e', lineHeight: 1.65 }}>{c.tldr}</div>
-              )}
+          )}
+          {f.idea && (
+            <div style={{ ...sans, fontWeight: 500, fontSize: 19, color: INK, lineHeight: 1.4, marginBottom: 16 }}>
+              {f.idea}
             </div>
+          )}
 
-            {/* Bottom group — closing line */}
-            <div>
-              <div style={{ width: 36, height: 2, background: a.color, marginBottom: 14 }} />
-              {card.type === 'protocol' && (
-                <div style={{ ...sans, fontSize: 17, color: '#4a453e', lineHeight: 1.6 }}>{c.how_to_start || c.overview}</div>
-              )}
-              {card.type === 'food_spotlight' && (
-                <div style={{ ...sans, fontSize: 17, color: '#4a453e', lineHeight: 1.6 }}>{c.bottom_line || c.intro}</div>
-              )}
-              {card.type === 'book_summary' && c.ideas?.length > 3 && (
-                <div style={{ ...mono, fontSize: 13, color: '#9a9088', letterSpacing: '0.03em' }}>
-                  +{c.ideas.length - 3} more ideas inside
-                </div>
-              )}
-              {card.type === 'research' && c.takeaway && (
-                <div style={{ ...mono, fontSize: 13, color: a.color, letterSpacing: '0.02em', lineHeight: 1.6, textTransform: 'uppercase' }}>
-                  Takeaway: {c.takeaway}
-                </div>
-              )}
-            </div>
+          <div style={{
+            ...serif, fontSize: quoting ? 30 : 24, fontStyle: quoting ? 'italic' : 'normal',
+            color: INK, lineHeight: 1.46,
+          }}>
+            {quoting ? `“${f.quotation}”` : f.body}
           </div>
-        )}
+
+          <div style={{ width: 50, height: 2, background: a.color, margin: '26px auto 20px' }} />
+          <div style={{ ...mono, fontSize: 21, color: a.color, letterSpacing: '0.05em' }}>
+            {(f.attribution || f.kicker || f.meta || '').toUpperCase()}
+          </div>
+        </div>
       </div>
 
-      <Footer vertical />
-    </div>
+      <FooterStack />
+    </Root>
   )
 }
 
-// ── MAIN EXPORT ──────────────────────────────────────────────
-export default function ShareTemplate({ card, style = 'stack' }) {
-  if (style === 'poster') return <PosterTemplate card={card} />
-  if (style === 'story') return <StoryTemplate card={card} />
-  return <StackTemplate card={card} />
+// ── STACK STORY ─────────────────────────────────────────────
+function StackStoryTemplate({ card, inline }) {
+  return (
+    <Root width={540} height={960} name="stackstory" inline={inline}>
+      <div style={{ flexShrink: 0, padding: '56px 44px 0' }}>
+        <Masthead size={25} />
+      </div>
+      <Deck card={card} w={470} h={470} pad="30px 32px" sizes={{ scale: 1.46, e: 13, k: 21.5, b: 15.5 }} />
+      <FooterStack />
+    </Root>
+  )
+}
+
+// ── LANDSCAPE ───────────────────────────────────────────────
+// 1200x630 is the Open Graph spec, so this layout doubles as the link preview.
+function LandscapeTemplate({ card, inline }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  return (
+    <Root
+      width={1200} height={630} name="landscape" inline={inline}
+      style={{ padding: 70, flexDirection: 'row', gap: 52, alignItems: 'stretch' }}
+    >
+      <div style={{ width: 9, background: a.color, borderRadius: 5, flexShrink: 0 }} />
+      <div
+        data-share-card
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}
+      >
+        <Fields card={card} e={23} k={43} b={29} />
+      </div>
+      <div style={{
+        flexShrink: 0, display: 'flex', flexDirection: 'column',
+        justifyContent: 'flex-end', alignItems: 'flex-end', gap: 10,
+      }}>
+        <Wordmark size={26} />
+        <div style={{ ...mono, fontSize: 16, color: MUTED, letterSpacing: '0.07em' }}>
+          thedailyledger.app
+        </div>
+      </div>
+    </Root>
+  )
+}
+
+// ── STICKER ─────────────────────────────────────────────────
+// Transparent canvas, opaque card, real shadow — drops onto any background.
+function StickerTemplate({ card, inline }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  return (
+    <Root
+      width={540} height={540} name="sticker" transparent inline={inline}
+      style={{ padding: 44, justifyContent: 'center' }}
+    >
+      <div
+        data-share-card
+        style={{
+          background: SURFACE, borderRadius: 14, border: `0.5px solid ${HAIRLINE}`,
+          borderLeft: `5px solid ${a.color}`, padding: '32px 30px', overflow: 'hidden',
+          boxShadow: '0 18px 44px rgba(0,0,0,0.22), 0 3px 10px rgba(0,0,0,0.10)',
+        }}
+      >
+        <Fields card={card} e={13} k={23.5} b={15} />
+        <div style={{
+          height: 1, marginTop: 20, marginBottom: 12,
+          background: 'linear-gradient(to right, rgba(181,130,58,0.5), rgba(181,130,58,0.06))',
+        }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <img src={LOGO_SRC} alt="The Daily Ledger" style={{ height: 20, width: 'auto' }} />
+          <div style={{ ...mono, fontSize: 9, color: MUTED, letterSpacing: '0.1em' }}>
+            thedailyledger.app
+          </div>
+        </div>
+      </div>
+    </Root>
+  )
+}
+
+// ── CIRCLE ──────────────────────────────────────────────────
+// A seal rather than a card. Quotes and scripture only — nothing longer sits
+// in a round frame legibly.
+function CircleTemplate({ card, inline }) {
+  const a = ACCENT[card.type] || ACCENT.quote
+  const f = cardFields(card)
+
+  return (
+    <Root
+      width={540} height={540} name="circle" transparent inline={inline}
+      style={{ alignItems: 'center', justifyContent: 'center' }}
+    >
+      <div
+        data-share-card
+        style={{
+          width: 496, height: 496, borderRadius: '50%', background: SURFACE,
+          border: `3px solid ${a.color}`, boxShadow: '0 18px 44px rgba(0,0,0,0.22)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          textAlign: 'center', padding: '70px 64px', overflow: 'hidden',
+        }}
+      >
+        <div data-share-inner>
+          <div style={{
+            ...mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: a.color, marginBottom: 18,
+          }}>
+            {TYPE_LABELS[card.type]}
+          </div>
+          <div style={{ ...serif, fontSize: 23, fontStyle: 'italic', color: INK, lineHeight: 1.44 }}>
+            &ldquo;{f.quotation}&rdquo;
+          </div>
+          <div style={{ width: 34, height: 2, background: a.color, margin: '18px auto 14px' }} />
+          <div style={{ ...mono, fontSize: 11, color: a.color, letterSpacing: '0.07em' }}>
+            {(f.attribution || '').toUpperCase()}
+          </div>
+          <div style={{ ...mono, fontSize: 9, color: MUTED, letterSpacing: '0.1em', marginTop: 16 }}>
+            thedailyledger.app
+          </div>
+        </div>
+      </div>
+    </Root>
+  )
+}
+
+const TEMPLATES = {
+  stack: StackTemplate,
+  poster: PosterTemplate,
+  story: StoryTemplate,
+  stackstory: StackStoryTemplate,
+  landscape: LandscapeTemplate,
+  sticker: StickerTemplate,
+  circle: CircleTemplate,
+}
+
+export default function ShareTemplate({ card, style = 'stack', inline = false }) {
+  if (!card) return null
+  const Template = TEMPLATES[style] || StackTemplate
+  return <Template card={card} inline={inline} />
 }
