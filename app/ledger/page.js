@@ -34,10 +34,7 @@ export default async function LedgerArchive() {
           <h1 className="tdl-archive-title">
             Past <em>ledgers</em>
           </h1>
-          <p className="tdl-archive-sub">
-            The last {ARCHIVE_DAYS} days. Older editions retire so this stays a place to catch up,
-            not a backlog.
-          </p>
+          <p className="tdl-archive-sub">Your last {ARCHIVE_DAYS} days</p>
         </div>
 
         {editions.length === 0 ? (

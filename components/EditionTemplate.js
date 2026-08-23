@@ -109,29 +109,36 @@ export default function EditionTemplate({ cards, edition, dateLabel, inline = fa
           ALSO INSIDE
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+        {/* Type label above the title rather than in a left column. A fixed
+            label column pushed every title 116px in while the questions
+            beneath started at the margin, so the index read as two ragged
+            lists. Stacked, everything shares one left edge. */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
           {named.map(({ type, handle }) => (
-            <div key={`${type}-${handle}`} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
-              <span style={{
-                ...mono, fontSize: 9.5, letterSpacing: '0.1em', minWidth: 104,
-                color: (ACCENT[type] || ACCENT.quote).color,
+            <div key={`${type}-${handle}`}>
+              <div style={{
+                ...mono, fontSize: 9, letterSpacing: '0.14em',
+                color: (ACCENT[type] || ACCENT.quote).color, marginBottom: 3,
               }}>
                 {(TYPE_LABELS[type] || '').toUpperCase()}
-              </span>
-              <span style={{ ...serif, fontSize: 19, color: INK, lineHeight: 1.2 }}>{handle}</span>
+              </div>
+              <div style={{ ...serif, fontSize: 20, color: INK, lineHeight: 1.2 }}>{handle}</div>
             </div>
           ))}
         </div>
 
         {questions.length > 0 && (
           <>
-            <div style={{ height: 0.5, background: 'rgba(0,0,0,0.10)', margin: '18px 0' }} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+            <div style={{ height: 0.5, background: 'rgba(0,0,0,0.10)', margin: '16px 0 14px' }} />
+            <div style={{
+              ...mono, fontSize: 9, letterSpacing: '0.14em',
+              color: ACCENT.quick_facts.color, marginBottom: 9,
+            }}>
+              QUICK FACTS
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {questions.map((q) => (
-                <div key={q} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
-                  <span style={{ color: ACCENT.quick_facts.color, fontSize: 11, lineHeight: 1.7, flexShrink: 0 }}>◇</span>
-                  <span style={{ ...serif, fontSize: 18, color: INK, lineHeight: 1.3 }}>{q}</span>
-                </div>
+                <div key={q} style={{ ...serif, fontSize: 17, color: INK, lineHeight: 1.32 }}>{q}</div>
               ))}
             </div>
           </>

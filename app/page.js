@@ -24,7 +24,7 @@ const CARD_TYPES = [
     color: '#2a8a6e',
     bg: 'rgba(42,138,110,0.08)',
     border: 'rgba(42,138,110,0.2)',
-    description: 'Two surprising, well-sourced facts per topic you follow, and a link to learn more. Always something worth knowing.',
+    description: 'Surprising, well-sourced facts drawn from the topics you follow, each with a link to learn more. Always something worth knowing.',
   },
   {
     emoji: '📚',
@@ -48,7 +48,7 @@ const CARD_TYPES = [
     color: '#2e6da4',
     bg: 'rgba(46,109,164,0.08)',
     border: 'rgba(46,109,164,0.2)',
-    description: 'Two peer-reviewed study summaries. The finding, the context, and why it matters.',
+    description: 'A peer-reviewed study, summarised. The finding, the context, and why it matters.',
   },
   {
     emoji: '⚙️',
@@ -71,7 +71,7 @@ const DIFFERENCES = [
 
 const STEPS = [
   { num: '01', title: 'Pick your topics', body: 'Choose from 14 interest categories. Your daily cards are pulled from whatever interests you choose to follow.' },
-  { num: '02', title: 'Read each morning', body: 'Your ledger refreshes every day at 4am with new cards. Your cards will never repeat.' },
+  { num: '02', title: 'Read each morning', body: 'Your ledger refreshes overnight with new cards. Nothing you have read comes back for at least 45 days, and the last 30 editions stay available if you miss a day.' },
   { num: '03', title: 'Go live your day', body: "When you've read your cards, you're done. No infinite scrolling, no reposting. Dive deeper into what you learned, then go live your day." },
 ]
 
